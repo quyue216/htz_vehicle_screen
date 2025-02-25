@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <el-form ref="loginRef" :model="loginForm" :rules="loginRules" class="login-form">
-      <h3 class="title">若依后台管理系统</h3>
+      <h3 class="title">一体化养护平台</h3>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -25,7 +25,8 @@
           <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
         </el-input>
       </el-form-item>
-      <el-form-item prop="code" v-if="captchaEnabled">
+      <!-- 后台进行验证,验证码是否正确 -->
+     <!--  <el-form-item prop="code" v-if="captchaEnabled">
         <el-input
           v-model="loginForm.code"
           size="large"
@@ -39,7 +40,7 @@
         <div class="login-code">
           <img :src="codeUrl" @click="getCode" class="login-code-img"/>
         </div>
-      </el-form-item>
+      </el-form-item> -->
       <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">记住密码</el-checkbox>
       <el-form-item style="width:100%;">
         <el-button
@@ -73,11 +74,11 @@ import useUserStore from '@/store/modules/user'
 const userStore = useUserStore()
 const route = useRoute();
 const router = useRouter();
-const { proxy } = getCurrentInstance();
+const { proxy } = getCurrentInstance(); //!这样获取$refs,并没有这样做过
 
 const loginForm = ref({
   username: "admin",
-  password: "admin123",
+  password: "Pfyh@admin5211",
   rememberMe: false,
   code: "",
   uuid: ""
@@ -92,11 +93,13 @@ const loginRules = {
 const codeUrl = ref("");
 const loading = ref(false);
 // 验证码开关
-const captchaEnabled = ref(true);
+const captchaEnabled = ref(false);
+
+
 // 注册开关
 const register = ref(false);
 const redirect = ref(undefined);
-
+// 记录登录之前访问的页面
 watch(route, (newRoute) => {
     redirect.value = newRoute.query && newRoute.query.redirect;
 }, { immediate: true });
@@ -116,9 +119,10 @@ function handleLogin() {
         Cookies.remove("password");
         Cookies.remove("rememberMe");
       }
-      // 调用action的登录方法
+      //! 调用action的登录方法, 直接通过userStore.login方法登录
       userStore.login(loginForm.value).then(() => {
         const query = route.query;
+        // 登录成功后，还原当前访问页面的数据
         const otherQueryParams = Object.keys(query).reduce((acc, cur) => {
           if (cur !== "redirect") {
             acc[cur] = query[cur];
@@ -136,7 +140,7 @@ function handleLogin() {
     }
   });
 }
-
+// 获取验证码
 function getCode() {
   getCodeImg().then(res => {
     captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled;
@@ -147,6 +151,7 @@ function getCode() {
   });
 }
 
+// 获取初始记住的密码
 function getCookie() {
   const username = Cookies.get("username");
   const password = Cookies.get("password");
@@ -158,7 +163,7 @@ function getCookie() {
   };
 }
 
-getCode();
+// getCode();
 getCookie();
 </script>
 

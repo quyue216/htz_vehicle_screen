@@ -22,8 +22,10 @@ const useUserStore = defineStore(
         const uuid = userInfo.uuid
         return new Promise((resolve, reject) => {
           login(username, password, code, uuid).then(res => {
-            setToken(res.token)
-            this.token = res.token
+            // 设置登录token
+            let token = res.data.access_token;
+            setToken(token)
+            this.token = token
             resolve()
           }).catch(error => {
             reject(error)
@@ -35,14 +37,17 @@ const useUserStore = defineStore(
         return new Promise((resolve, reject) => {
           getInfo().then(res => {
             const user = res.user
-            const avatar = (user.avatar == "" || user.avatar == null) ? defAva : import.meta.env.VITE_APP_BASE_API + user.avatar;
+            //! 关于环境变量的使用
+            const avatar = (user.avatar == "" || user.avatar == null) ? defAva :  user.avatar;
 
             if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
-              this.roles = res.roles
-              this.permissions = res.permissions
+              this.roles = res.roles;
+              this.permissions = res.permissions;
+
             } else {
               this.roles = ['ROLE_DEFAULT']
             }
+            // ! pinia直接设置 
             this.id = user.userId
             this.name = user.userName
             this.avatar = avatar

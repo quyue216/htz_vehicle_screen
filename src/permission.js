@@ -16,6 +16,7 @@ const whiteList = ['/login', '/register'];
 router.beforeEach((to, from, next) => {
   NProgress.start()
   if (getToken()) {
+    // 动态设置标题
     to.meta.title && useSettingsStore().setTitle(to.meta.title)
     /* has token*/
     if (to.path === '/login') {

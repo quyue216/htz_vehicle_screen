@@ -13,6 +13,7 @@ const useSettingsStore = defineStore(
       theme: storageSetting.theme || '#409EFF',
       sideTheme: storageSetting.sideTheme || sideTheme,
       showSettings: showSettings,
+      // 本地storage 中未设置时，使用初始化设置
       topNav: storageSetting.topNav === undefined ? topNav : storageSetting.topNav,
       tagsView: storageSetting.tagsView === undefined ? tagsView : storageSetting.tagsView,
       fixedHeader: storageSetting.fixedHeader === undefined ? fixedHeader : storageSetting.fixedHeader,
