@@ -31,15 +31,22 @@ export const constantRoutes = [
     component: ()=> import('@/views/maintenancePlatform/index.vue'),
     children:[
       {
-        path: '/maint/overview',
+        path: 'overview',
         component: () => import('@/views/maintenancePlatform/overview/index.vue'),
         name: 'overview',
         meta: { title: '总览' }
       },
+      // 
+      {
+        path: 'urbanManage',
+        component: () => import('@/views/maintenancePlatform/urbanManagement/index.vue'),
+        name: 'urbanManage',
+        meta: { title: '设施' }
+      },
       // overview设置为默认进入页面
       {
         path: '',
-        redirect: 'overview'
+        redirect: '/maint/overview'
       }
     ]
   },
