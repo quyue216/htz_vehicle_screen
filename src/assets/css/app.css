@@ -1,0 +1,138 @@
+
+
+
+/* center:居中 */
+/* flex:单纯flex布局 */
+/* wrap:flex下换行 */
+/* width10+_:宽度以%展示 */
+/* width10+_:宽度以px展示 */
+
+
+.center{display: flex;justify-content: center;align-items: center;}
+.flex{display: flex;}
+.wrap{display: flex;flex-wrap: wrap;}
+
+.width10_{width: 10%;}
+.width20_{width: 20%;}
+.width30_{width: 30%;}
+.width40_{width: 40%;}
+.width50_{width: 50%;}
+.width60_{width: 60%;}
+.width70_{width: 70%;}
+.width80_{width: 80%;}
+.width90_{width: 90%;}
+.width91_{width: 91%;}
+.width92_{width: 92%;}
+.width93_{width: 93%;}
+.width100_{width: 100%;}
+
+.width10{width: 10px;}
+.width20{width: 20px;} 
+.width30{width: 30px;} 
+.width40{width: 40px;} 
+.width50{width: 50px;} 
+.width60{width: 60px;} 
+.width70{width: 70px;} 
+.width80{width: 80px;} 
+.width90{width: 90px;} 
+.width100{width: 100px;} 
+.width150{width: 150px;} 
+.width200{width: 200px;} 
+.width250{width: 250px;} 
+.width270{width: 270px;} 
+.width300{width: 300px;} 
+.width400{width: 400px;} 
+.width500{width: 500px;} 
+.width600{width: 600px;} 
+.width700{width: 700px;} 
+.width800{width: 800px;}
+.width900{width: 900px;}
+.width1000{width: 1000px;}
+
+.height10{height: 10px;}
+.height20{height: 20px;} 
+.height30{height: 30px;} 
+.height40{height: 40px;} 
+.height50{height: 50px;} 
+.height100{height: 100px;} 
+.height150{height: 150px;} 
+.height200{height: 200px;} 
+.height250{height: 250px;} 
+.height300{height: 300px;} 
+.height400{height: 400px;} 
+.height500{height: 500px;} 
+.height600{height: 600px;} 
+.height700{height: 700px;} 
+.height800{height: 800px;}
+.height900{height: 900px;}
+.height1000{height: 1000px;}
+
+.marginLeft10_{margin-left: -10%;}
+.marginLeft5_{margin-left: -5%;}
+.marginLeft1{margin-left: 1%;}
+.marginLeft2{margin-left: 2%;}
+.marginLeft3{margin-left: 3%;}
+.marginLeft4{margin-left: 4%;}
+.marginLeft5{margin-left: 5%;}
+.marginLeft6{margin-left: 6%;}
+.marginLeft7{margin-left: 7%;}
+.marginLeft8{margin-left: 8%;}
+.marginLeft9{margin-left: 9%;}
+.marginLeft10{margin-left: 10%;}
+.marginLeft15{margin-left: 15%;}
+.marginLeft20{margin-left: 20%;}
+.marginLeft30{margin-left: 30%;}
+.marginLeft33{margin-left: 33%;}
+.marginLeft40{margin-left: 40%;}
+.marginLeft47{margin-left: 47%;}
+.marginLeft50{margin-left: 50%;}
+.marginLeft60{margin-left: 60%;}
+.marginLeft67{margin-left: 67%;}
+.marginLeft70{margin-left: 70%;}
+.marginLeft80{margin-left: 80%;}
+.marginLeft90{margin-left: 90%;}
+.marginLeft100{margin-left: 100%;}
+
+.marginTop6{margin-top: 6px;}
+.marginTop10{margin-top: 10px;}
+.marginTop20{margin-top: 20px;}
+.marginTop30{margin-top: 30px;}
+.marginTop40{margin-top: 40px;}
+.marginTop50{margin-top: 50px;}
+.marginTop100{margin-top: 100px;}
+ 
+/* table表格数据信息 */
+.formRow1{width: 250px;border: 0px solid black;}
+.formRow1 input{ height: 10px; border: 0px solid black;border-bottom: 0px solid silver;padding-top: -11px;}
+.formRow1_85{width: 200px;border: 0px solid black; margin-left:85%}
+.formRow1_85 input{ height: 10px; border: 0px solid black;border-bottom: 0px solid silver;padding-top: -11px;}
+.formRow1_851{width: 175px;margin-left:75%;}
+.formRow1_851 input{ height: 30px; }
+/* .formRow1_851{width: 200px;height: 30px;border: 0px solid black; margin-left:75%}
+.formRow1_851 input{ height: 30px; border: 1px solid black;border-bottom: 0px solid silver;padding-top: -5px;} */
+/* 每行规划3个 */
+.formRow3{width: 25%;margin-left: 5%;margin-top:0px;}  
+.formRow3 input{width: 90%; height: 15px; border: 0px solid rgb(230, 231, 231);border-bottom: 1px solid silver;margin-left: 12px;margin-top:0px;}
+/* 每行规划4个 */
+.formRow4{width: 240px;margin-left: 4%;margin-top:0px;}  
+.formRow4 input{width: 170px; height: 15px; border: 0px solid rgb(230, 231, 231);border-bottom: 1px solid silver;margin-left: 12px;}
+/* .formRow3{width: 350px;margin-left: 4%;margin-top:0px;}  
+.formRow3 input{width: 240px; height: 15px; border: 0px solid black;border-bottom: 1px solid silver;margin-left: 12px;}
+.formRow4{width: 240px;margin-left: 4%;margin-top:0px;}  
+.formRow4 input{width: 170px; height: 15px; border: 0px solid black;border-bottom: 1px solid silver;margin-left: 12px;} */
+.formInput {width: 200px;margin-left:1%;}
+.rightSearch3{ position: absolute;top: auto; right: 3%;}
+.rightUp8{ position: absolute;top: auto; right: 8%;}
+
+ 
+.search{width: 50px;height: 30px;padding: 5px 5px;margin-left: 5px;}
+ .xzrq{width: 300px;}
+
+
+ .lable3{width:300px;margin-left:5%;}
+ .lable3>label{width: 140px;margin-top: 5px;margin-left: 5px;}
+
+ .boder0{border: 0px solid rgb(230, 231, 231);} 
+ .boder0 input{width: 75%; height: 15px; border: 0px solid rgb(230, 231, 231);border-bottom: 1px solid silver}
+
+  
