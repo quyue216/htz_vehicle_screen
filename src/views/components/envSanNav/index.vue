@@ -1,12 +1,11 @@
 <template>
   <div>
-    <MapView></MapView>
-
+    底部导航栏组件
   </div>
 </template>
 
 <script setup>
-import MapView from "./mapView/index.vue";
+// mapActive 激活选项
 </script>
 
 <style scoped lang='less'>

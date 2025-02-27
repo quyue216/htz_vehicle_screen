@@ -244,3 +244,8 @@ export function getNormalPath(p) {
 export function blobValidate(data) {
   return data.type !== 'application/json'
 }
+
+// 用于覆盖默认配置
+export function mergeConfig(source, target) {
+  return Object.assign(source, target);
+}

@@ -40,6 +40,8 @@ const logout =async ()=>{
  router.replace("/login")
 }
 
+console.log(import.meta.env)
+
 </script>
 
 <style scoped lang='scss'>
@@ -55,7 +57,13 @@ const logout =async ()=>{
   justify-content: space-evenly;
   align-items: center;
   .header-right,.header-left{
-  display: flex;
+    display: flex;
+  }
+  .header-left{
+    transform: translateX(10px);
+  }
+  .header-right{
+    transform: translateX(-10px);
   }
   .header-title{
     width: 600px;
