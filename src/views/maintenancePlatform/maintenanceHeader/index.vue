@@ -70,6 +70,11 @@ const logout =async ()=>{
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    // 小于1500px宽度时，缩小标题
+    @media screen and (max-width: 1500px) {
+      // width: 400px
+      display: none;
+    }
   }
 }
 .goto-system {
