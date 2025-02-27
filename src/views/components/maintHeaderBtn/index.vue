@@ -25,10 +25,10 @@ const props = defineProps({
 
 <style scoped lang='scss'>
 
-.head-btn{
+.headerBut{
     width: 100px;
     height: 35px;
-    background-image: url(~@/assets/images/maintenancePlatform/head_but.png);
+    background-image: url(@/assets/images/maintenancePlatform/head_but.png);
     background-size: 100% 100%;
     display: flex;
     justify-content: center;
@@ -41,7 +41,7 @@ const props = defineProps({
 }
 
 .headerBut.router-link-exact-active {
-    background-image: url(~@/assets/images/maintenancePlatform/head_but_active.png);
+    background-image: url(@/assets/images/maintenancePlatform/head_but_active.png);
     background-size: 100% 100%;
     opacity: 1;
 }
