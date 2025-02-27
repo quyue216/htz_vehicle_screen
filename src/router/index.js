@@ -27,16 +27,63 @@ import Layout from '@/layout'
 // 公共路由
 export const constantRoutes = [
   {
-    path:"/maint",
-    component: ()=> import('@/views/maintenancePlatform/index.vue'),
-    children:[
+    path: '/maint',
+    component: () => import('@/views/maintenancePlatform/index.vue'),
+    children: [
       {
         path: 'overview',
         component: () => import('@/views/maintenancePlatform/overview/index.vue'),
         name: 'overview',
         meta: { title: '总览' }
       },
-      // 
+      {
+        path: 'drainage',
+        component: () => import('@/views/maintenancePlatform/drainage/index.vue'),
+        name: 'drainage',
+        meta: { title: '排水' }
+      },
+      {
+        path: 'envSan',
+        component: () => import('@/views/maintenancePlatform/envSan/index.vue'),
+        name: 'envSan',
+        meta: { title: '环卫' }
+      },
+      {
+        path: 'greening',
+        component: () => import('@/views/maintenancePlatform/greening/index.vue'),
+        name: 'greening',
+        meta: { title: '绿化' }
+      },
+      {
+        path: 'river',
+        component: () => import('@/views/maintenancePlatform/river/index.vue'),
+        name: 'river',
+        meta: { title: '河道' }
+      },
+      {
+        path: 'roadMaintain',
+        component: () => import('@/views/maintenancePlatform/roadMaintain/index.vue'),
+        name: 'roadMaintain',
+        meta: { title: '道路维护' }
+      },
+      {
+        path: 'szMaintain',
+        component: () => import('@/views/maintenancePlatform/urbanPatrol/index.vue'),
+        name: 'szMaintain',
+        meta: { title: '市政维护' }
+      },
+      {
+        path: 'urbanPatrol',
+        component: () => import('@/views/maintenancePlatform/urbanPatrol/index.vue'),
+        name: 'urbanPatrol',
+        meta: { title: '城管巡查' }
+      },
+      {
+        path: 'workOrder',
+        component: () => import('@/views/maintenancePlatform/workOrder/index.vue'),
+        name: 'workOrder',
+        meta: { title: '工单' }
+      },
       {
         path: 'urbanManage',
         component: () => import('@/views/maintenancePlatform/urbanManagement/index.vue'),
