@@ -83,10 +83,14 @@
   box-sizing: content-box;
 }
 
-.el-table .warning-row {
-  background: oldlace;
+.el-menu--collapse
+  > div
+  > .el-submenu
+  > .el-submenu__title
+  .el-submenu__icon-arrow {
+  display: none;
 }
 
-.el-table .success-row {
-  background: #f0f9eb;
+.el-dropdown .el-dropdown-link{
+  color: var(--el-color-primary) !important;
 }
