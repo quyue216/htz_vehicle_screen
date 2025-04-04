@@ -314,7 +314,7 @@ class GdMapUtils {
     delete this.mapTitleLayers[id];
   }
 
-
+  
 }
 
 export default GdMapUtils;
