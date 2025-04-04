@@ -49,10 +49,7 @@ onMounted(async () => {
 <style scoped lang="scss">
 .map-wrap {
     width: 100%;
-    height: calc(100vh - 65px);
-    position: absolute;
-    top: 60px;
-    left: 0;
+    height: 100%;
     // z-index: -1/*  */;
     #gisMap {
         width: 100%;
