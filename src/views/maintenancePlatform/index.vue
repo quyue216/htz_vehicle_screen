@@ -4,7 +4,7 @@
       <MaintHeader></MaintHeader>
     </header>
     <main class="nav-view">
-      <router-view></router-view>
+      <router-view class="full-parent"></router-view>
     </main>
   </div>
 </template>
@@ -27,6 +27,10 @@ onMounted(() => {
   .nav-view { // 视图自动撑开
     //定义视图的高度和宽度
     flex: 1;
+    .full-parent {
+      width: 100%;
+      height: 100%;
+    }
   }
 }
 </style>
