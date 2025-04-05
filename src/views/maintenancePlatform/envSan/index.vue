@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import MapView from "./mapView/index.vue";
+import MapView from "./mapView/MapView.vue";
 import useEnvSanStore from "@/store/modules/envSan.js";
 import BottomNavigation from "./BottomNavigation/BottomNavigation.vue";
 
