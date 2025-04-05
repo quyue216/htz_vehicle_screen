@@ -42,7 +42,7 @@ class GdMapUtils {
     window._AMapSecurityConfig = {
       securityJsCode: "2b1889431fbb440258ac339b49010e3f",
     }
-    options.key =  '9506c73ed67acb0a09f1aabf88df4819'
+    options.key = '9506c73ed67acb0a09f1aabf88df4819'
     this.loadOpts = options;
   }
 
@@ -105,8 +105,8 @@ class GdMapUtils {
           this.AMapUI = window.AMapUI;
 
           this.AMap = AMap;
-        
-          
+
+
           this.map = new AMap.Map(this.id, this.mapOpts); //"container"为 <div> 容器的 id
 
           resolve(this.map);
@@ -174,7 +174,7 @@ class GdMapUtils {
 
   // 根据不同的分类创建不同的marker配置 
   // ? 没有type使用不是很方便,交换参数位置
-  matchCategoryMarker({ lon, lat, title, id, labelX = 0, labelY = -27, ...rest },type) {
+  matchCategoryMarker({ lon, lat, title, id, labelX = 0, labelY = -27, ...rest }, type) {
     const common = {
       //公共参数
       label: {
@@ -314,7 +314,28 @@ class GdMapUtils {
     delete this.mapTitleLayers[id];
   }
 
-  
+  // 海量点数据
+  createLabelLayer({ zoom = [1, 20], zIndex = 1000, collision = true, ...rest }) {
+    const labelLayer = new this.AMap.LabelsLayer({
+      zIndex,
+      collision,
+      zoom,
+      ...rest,
+    });
+    labelLayer.setMap(this.map);
+    return labelLayer;
+  }
+  // 创建labelMarker标注
+  createLabelLayerMarker({ icon, text, position, ...rest }) {
+    const label = new this.AMap.LabelMarker({
+      icon: icon,
+      text: text,
+      position: position,
+      ...rest,
+    });
+    return label;
+  }
+  //[x] 函数体越写越多能不能拆分一下
 }
 
 export default GdMapUtils;
