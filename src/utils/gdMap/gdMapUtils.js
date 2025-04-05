@@ -30,6 +30,9 @@ class GdMapUtils {
     */
   events = new Map();
 
+  // 缓存实例集合
+  static mapInstance = new Map();
+
   /**
    * 加载地图和初始化地图分开
    * @param {Object} options 加载高德初始化地图配置
@@ -44,6 +47,7 @@ class GdMapUtils {
     }
     options.key = '9506c73ed67acb0a09f1aabf88df4819'
     this.loadOpts = options;
+
   }
 
   error(msg) {
@@ -110,6 +114,10 @@ class GdMapUtils {
           this.map = new AMap.Map(this.id, this.mapOpts); //"container"为 <div> 容器的 id
 
           resolve(this.map);
+          // 将当前实例存储到 mapInstance 中
+          GdMapUtils.mapInstance.set(id, this);
+
+          
         })
         .catch((e) => {
           reject(e);
