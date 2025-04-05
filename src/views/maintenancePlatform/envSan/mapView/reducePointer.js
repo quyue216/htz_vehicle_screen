@@ -93,7 +93,8 @@ watch(() => envSanStore.mapActiveType, (newVal) => {
   let gdMapUtils = getGdMapUtilsIns() //!获取地图实例
 
   if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
-  
+  console.log('isGcLayerCreate', isGcLayerCreate, 'toiletList',toiletList );
+
   if (newVal === 'ys') {
 
     if (isGcLayerCreate) {
@@ -109,3 +110,5 @@ watch(() => envSanStore.mapActiveType, (newVal) => {
     hideToiletLayer(); // 隐藏公厕图层
   }
 });
+
+// HACK 临时复制公厕函数
