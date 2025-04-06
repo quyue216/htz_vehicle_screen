@@ -27,8 +27,6 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
     // anchor: "bottom-center", // 图标锚点位置
   });
 
-  
-
   // 处理数据
   if (result.code === 200) {
 
@@ -37,26 +35,31 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
     pointList
       .filter(({ jd, wd }) => jd && wd)
       .forEach((toilet) => {
-        const { jd, wd, cphm} = toilet;
-        console.log('toilet', jd,wd);
-        
+        const { jd, wd, cphm:title} = toilet;        
         // 创建标记
-        const label = gdMapUtils.createMarker('vehicle',{
-          lon:jd,
-          lat:wd, 
-          title:cphm,
+        gdMapUtils.createMarker('zzVehicle',{
+          title,
           anchor:"bottom-center",
           icon,
           label:{
-            content:`<div class="zzVehicle">${cphm}</div>`,
+            content:`<div class="zzVehicle">${title}</div>`,
             offset: new AMap.Pixel(0,0), //TODO 弹窗偏移量是如何设置的
             direction: 'top',
-          }
+          },
+          clickable: true,
+          zooms: [2, 20],
+          zIndex: 1000,
+          extData: {
+            id: title,
+            title,
+            type:'zzVehicle',
+          },
+          position: new AMap.LngLat(jd, wd),
         });
-        console.log('label', label);
-        
         // return label;
       });
+    
+    toiletLayer = gdMapUtils.getOverlayGroupManager('zzVehicle'); // 获取图层对象  
 
     // 添加标记到图层
     isLayerCreate = true; // 设置图层显示状态为true
@@ -66,7 +69,7 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
 // 显示公厕图层
 export function showToiletLayer() {
   if (toiletLayer && pointList.length) {
-    toiletLayer.show(); // 显示图层
+    toiletLayer.showOverlay(); // 显示图层
   }
 }
 
@@ -74,7 +77,7 @@ export function showToiletLayer() {
 // 隐藏公厕图层
 export function hideToiletLayer() {
   if (toiletLayer && pointList.length) {
-    toiletLayer.hide(); // 隐藏图层
+    toiletLayer.hideOverlay(); // 隐藏图层
   }
 }
 
@@ -88,17 +91,12 @@ watch(() => envSanStore.mapActiveType, (newVal) => {
   if (newVal === 'zz') {
     console.log('显示中转图层');
     if (isLayerCreate) {
-      
-      // showToiletLayer(); // 显示公厕图层
-      
+      showToiletLayer(); // 显示公厕图层
     } else {
-      
-     
+      createMarkerLayer(gdMapUtils)
     }
-    createMarkerLayer(gdMapUtils)
   } else {
-  
-    // hideToiletLayer(); // 隐藏公厕图层
+    hideToiletLayer(); // 隐藏公厕图层
   }
 });
 
