@@ -204,4 +204,20 @@ aside {
   padding: 0;
   border: none;
   color: #fff;
+  -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+// 图片不可以被选中
+.amap-icon{
+  img {
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
 }
