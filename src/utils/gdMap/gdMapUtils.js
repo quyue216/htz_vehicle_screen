@@ -106,10 +106,10 @@ class GdMapUtils {
         .then((AMap) => {
           // 将 AMap 全局对象挂载到 window 上
           window.AMap = AMap;
+
           this.AMapUI = window.AMapUI;
-
+          
           this.AMap = AMap;
-
 
           this.map = new AMap.Map(this.id, this.mapOpts); //"container"为 <div> 容器的 id
 
@@ -136,7 +136,7 @@ class GdMapUtils {
     let events = this.events.get(type) ?? {};
     // 只能保存一次
     events[clickType] = callback;
-
+    // 保存事件
     this.events.set(type, events);
   }
   // 新增的marker绑定事件
@@ -153,8 +153,9 @@ class GdMapUtils {
 
   //创建点位
   createMarker(type, Opts) {
-    // 的到对应类型的配置
-    const config = this.matchCategoryMarker(type, Opts);
+    //TODO  不要把业务配置写在这里, 只做地图的封装
+    console.log('Opts', Opts);
+    const config = this.matchCategoryMarker(Opts,type);
 
     const marker = new AMap.Marker(config);
     // 获取标注的类型 AMap.Marker 得到marker
@@ -185,13 +186,13 @@ class GdMapUtils {
   matchCategoryMarker({ lon, lat, title, id, labelX = 0, labelY = -27, ...rest }, type) {
     const common = {
       //公共参数
-      label: {
+      /* label: {
         direction: 'center',
         offset: new this.AMap.Pixel(labelX, labelY), //设置文本标注偏移量
         content: `<div class='info'>${title}</div>`, //设置文本标注内容
-      },
+      }, */
       clickable: true,
-      zooms: [14, 20],
+      zooms: [2, 20],
       zIndex: 1000,
       extData: {
         id: id ?? title,
@@ -205,6 +206,9 @@ class GdMapUtils {
         //公司marker配置
       },
       workOrder: {
+      },
+      vehicle: {
+        //车辆marker配置
       },
     };
     const sourceConfig = { ...(markerConfig[type] ?? {}), ...common };
