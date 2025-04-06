@@ -1,5 +1,6 @@
 import AMapLoader from '@amap/amap-jsapi-loader';
 import { mergeConfig } from '../ruoyi.js';
+import OverlayGroupManager from "./overlayGroupManager.js"
 
 /**
  * 针对高德的二次封装
@@ -20,18 +21,11 @@ class GdMapUtils {
   mapOpts = {};
 
   mapTitleLayers = {}; //图层map对象
-  /* 
-    marker:{
-      click:cun
-      dbClick:fun
-    },
-    
-    保存事件的集合
-    */
-  events = new Map();
 
   // 缓存实例集合
   static mapInstance = new Map();
+
+  overlayGroupManagerMap = new Map();
 
   /**
    * 加载地图和初始化地图分开
@@ -128,47 +122,52 @@ class GdMapUtils {
 
   //给所有的marker绑定事件
   bindEventMarker(type, clickType, callback) {
-    // 获取地图的所有点位，绑定上事件
-    this.map.getAllOverlays(type).forEach((elm) => {
-      elm.on(clickType, callback);
-    });
-    // 保存事件
-    let events = this.events.get(type) ?? {};
-    // 只能保存一次
-    events[clickType] = callback;
-    // 保存事件
-    this.events.set(type, events);
-  }
-  // 新增的marker绑定事件
-  addMarkerBindEvent(type, marker) {
-    // 获取对应marker的事件，绑定给对应的marker
-    const callBacks = this.events.get(type) ?? {};
-
-    Object.entries(callBacks).forEach((item) => {
-      const [clickType, callback] = item;
-
-      marker.on(clickType, callback);
-    });
+  
+    this.getOverlayGroupManager(type)
+    .bindEventMarker(clickType, callback); // 绑定事件到图层管理器
   }
 
   //创建点位
   createMarker(type, Opts) {
-    //TODO  不要把业务配置写在这里, 只做地图的封装
-    console.log('Opts', Opts);
-    const config = this.matchCategoryMarker(Opts,type);
+    //TODO  不要把业务配置写在这里, 只做地图的封装    
+    const overlayGroupManager = this.createOverlayGroupManager(Opts, type); // 关联图层管理器
+    // 创建图标
+    const marker = new AMap.Marker(Opts);
 
-    const marker = new AMap.Marker(config);
-    // 获取标注的类型 AMap.Marker 得到marker
-    const clickType = marker.type.split('.')[1].toLowerCase();
+    // marker上地图
+    overlayGroupManager.addOverlay(marker);
 
-    this.addMarkerBindEvent(clickType, marker);
-    // 创建点位
-    this.mapToAdd(marker);
 
     return marker;
   }
 
-  // 更新点位
+  // 关联图层管理器
+  createOverlayGroupManager(overlays, overlayType) {
+    
+    const overlayManager =  this.getOverlayGroupManager(overlayType); //获取图层管理器 
+      
+    if(overlayManager) return overlayManager; //图层已经关联了
+
+    const overlayGroupManager = new OverlayGroupManager({
+      overlays,
+      overlayType,
+      map: this.map,
+    });
+
+    this.overlayGroupManagerMap.set(overlayType, overlayGroupManager); //保存图层管理器
+
+    return overlayGroupManager;
+  }
+
+  // 获取图层管理器
+  getOverlayGroupManager(overlayType) {
+    if( typeof overlayType !=="string" && overlayType.length === 0) {
+      return this.error('请传入图层类型')
+    }
+    return this.overlayGroupManagerMap.get(overlayType);
+  }
+
+  //HACK 更新点位,感觉不优雅
   updateMarker(marker, Opts) {
     if (!marker) {
       return this.error('参数错误');
@@ -176,54 +175,28 @@ class GdMapUtils {
     // 获取旧marker的类型
     const { type } = marker.getExtData();
     // 移除点位数据
-    this.removeMarker(marker);
+    this.removeMarker(type,marker);
     // 更新Marker
     this.createMarker(type, Opts);
   }
-
-  // 根据不同的分类创建不同的marker配置 
-  // ? 没有type使用不是很方便,交换参数位置
-  matchCategoryMarker({ lon, lat, title, id, labelX = 0, labelY = -27, ...rest }, type) {
-    const common = {
-      //公共参数
-      /* label: {
-        direction: 'center',
-        offset: new this.AMap.Pixel(labelX, labelY), //设置文本标注偏移量
-        content: `<div class='info'>${title}</div>`, //设置文本标注内容
-      }, */
-      clickable: true,
-      zooms: [2, 20],
-      zIndex: 1000,
-      extData: {
-        id: id ?? title,
-        title,
-        type,
-      },
-      position: new this.AMap.LngLat(lon, lat),
-    };
-    const markerConfig = {
-      compony: {
-        //公司marker配置
-      },
-      workOrder: {
-      },
-      vehicle: {
-        //车辆marker配置
-      },
-    };
-    const sourceConfig = { ...(markerConfig[type] ?? {}), ...common };
-
-    return mergeConfig(sourceConfig, rest);
-  }
   //移除某一个marker或者多个marker
-  removeMarker(overlay) {
-    this.map.remove(overlay);
+  removeMarker(overlayType,overlay) {
+
+     if(this.overlayGroupManagerMap.has(overlayType)) {
+      return this.error('图层不存在，请检查输入!');
+     }
+
+     const overlayGroupManager = this.getOverlayGroupManager(overlayType)
+
+     overlayGroupManager.removeOverlay(overlay); // 关联图层管理器
   }
 
   // 清楚所有覆盖物
   removeAllOverlay() {
-    // 清除地图上所有添加的覆盖物
-    this?.map?.clearMap();
+    //TODO 清除地图上所有添加的覆盖物(必须采用图层进行管理)
+    this.overlayGroupManagerMap.forEach((overlayGroup)=>{
+       overlayGroup.OverlayGroup.clearOverlays(); // 清除图层上的所有覆盖物
+    });
   }
 
   // 高德地图添加覆盖物
@@ -348,6 +321,7 @@ class GdMapUtils {
     return label;
   }
   //[x] 函数体越写越多能不能拆分一下
+
 }
 
 export default GdMapUtils;
