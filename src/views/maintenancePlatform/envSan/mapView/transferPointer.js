@@ -4,7 +4,7 @@ import useEnvSanStore from "@/store/modules/envSan.js";
 import GdMapUtils from '@/utils/gdMap/gdMapUtils.js'
 const { zzVehicle } = pointerConfig;
 
-const {windowConfig} = zzVehicle;
+const { windowConfig } = zzVehicle;
 // 公厕图层
 let toiletLayer = null;
 // 公厕列表数据
@@ -16,9 +16,9 @@ const envSanStore = useEnvSanStore()
 const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 实例化地图工具类
 // 创建公厕图层
 export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象成一个图层创建方法 
-   
+
   // 获取公厕数据
-  const result = await getCarList({tx:1});
+  const result = await getCarList({ tx: 1 });
 
   const icon = new AMap.Icon({
     image: zzVehicle.icon, // 图标图片 URL
@@ -35,15 +35,17 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
     pointList
       .filter(({ jd, wd }) => jd && wd)
       .forEach((toilet) => {
-        const { jd, wd, cphm:title} = toilet;        
+        const { jd, wd, cphm: title } = toilet;
         // 创建标记
-        gdMapUtils.createMarker('zzVehicle',{
+        gdMapUtils.createMarker('zzVehicle', {
           title,
-          anchor:"bottom-center",
+          anchor: "bottom-center",
           icon,
-          label:{
-            content:`<div class="zzVehicle">${title}</div>`,
-            offset: new AMap.Pixel(0,0), //TODO 弹窗偏移量是如何设置的
+          activeIcon: zzVehicle.activeIcon,
+          defaultIcon: zzVehicle.icon,
+          label: {
+            content: `<div class="zzVehicle">${title}</div>`,
+            offset: new AMap.Pixel(0, 0), //TODO 弹窗偏移量是如何设置的
             direction: 'top',
           },
           clickable: true,
@@ -52,15 +54,23 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
           extData: {
             id: title,
             title,
-            type:'zzVehicle',
+            type: 'zzVehicle',
           },
           position: new AMap.LngLat(jd, wd),
         });
         // return label;
       });
-    
+
     toiletLayer = gdMapUtils.getOverlayGroupManager('zzVehicle'); // 获取图层对象  
 
+    gdMapUtils.bindEventMarker('zzVehicle', 'click', (e) => {
+      const marker = e.target;
+
+      if (marker.getExtData().type === 'zzVehicle') {
+        toiletLayer.setActiveMarker(marker); // 设置激活的标记
+      }
+
+    });
     // 添加标记到图层
     isLayerCreate = true; // 设置图层显示状态为true
   }
