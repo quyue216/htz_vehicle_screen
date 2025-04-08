@@ -12,6 +12,8 @@ let pointList = [];
 // 图层是否显示
 let isLayerCreate = false;
 
+let updatePointerTimer = null;
+
 const envSanStore = useEnvSanStore()
 const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 实例化地图工具类
 // 创建公厕图层
@@ -52,9 +54,8 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
           zooms: [2, 20],
           zIndex: 1000,
           extData: {
-            id: title,
-            title,
             type: 'zzVehicle',
+            ...toilet
           },
           position: new AMap.LngLat(jd, wd),
         });
@@ -73,6 +74,8 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
       }
 
     });
+    // 检测车辆经纬度是否发生变化
+    updatePointerTimer = setinterval(updatePointer, 5*1000);
     // 添加标记到图层
     isLayerCreate = true; // 设置图层显示状态为true
   }
@@ -94,6 +97,44 @@ export function hideToiletLayer() {
 }
 
 
+async function updatePointer() {
+
+  if (!toiletLayer) return; // 如果图层不存在，则不执行后续操作
+  // 获取车辆数据
+  const result = await getCarList({ tx: 1 });
+
+  if (result.code === 200) {
+
+    let newestPointList = result.data;
+    // 创建标记
+    newestPointList
+      .filter(({ jd, wd }) => jd && wd)
+
+    let changeDataOfMarker = differenceWith(newestPointList, pointList);
+
+    changeDataOfMarker.forEach((toilet) => {
+      // 找到当前需要更新的marker
+      let marker = toiletLayer.findLayerMarker(toilet.cphm);
+      // 对marker进行更新  
+      marker.setPosition(new AMap.LngLat(toilet.jd, toilet.wd));
+    });
+  }
+
+}
+
+// 比较经纬度是否发生变化
+function differenceWith(newData, oldData) {
+
+  return newData.filter((nItem) => {
+    //  查找到旧的数据
+    let result = oldData.find(oItem => nItem.cphm === oItem.cphm)
+
+    if (!result) return true;
+
+    return !(nItem.jd === result.jd && nItem.wd === result.wd)
+  });
+}
+
 // 监听地图类型变化
 watch(() => envSanStore.mapActiveType, (newVal) => {
   let gdMapUtils = getGdMapUtilsIns() //!获取地图实例
@@ -113,3 +154,7 @@ watch(() => envSanStore.mapActiveType, (newVal) => {
 });
 
 // HACK 临时复制公厕函数
+
+onUnmounted(() => {
+  clearInterval(updatePointerTimer); // 清楚车辆更新定时器
+})
