@@ -10,6 +10,13 @@ const useEnvSanStore = defineStore("envSan", {
       this.mapActiveType = type;
     },
   },
+  getters: {
+    carPointerShow(){
+      const types = ['zz','qy','all']
+
+      return types.includes(this.mapActiveType);
+    }
+  },
 });
 
 export default useEnvSanStore;

@@ -64,9 +64,11 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
     toiletLayer = gdMapUtils.getOverlayGroupManager('zzVehicle'); // 获取图层对象  
 
     gdMapUtils.bindEventMarker('zzVehicle', 'click', (e) => {
+
       const marker = e.target;
 
       if (marker.getExtData().type === 'zzVehicle') {
+        toiletLayer.resetActiveMarker();  // 重置激活的标记
         toiletLayer.setActiveMarker(marker); // 设置激活的标记
       }
 
