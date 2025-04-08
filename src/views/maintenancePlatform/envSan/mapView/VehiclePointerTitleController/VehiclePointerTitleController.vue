@@ -13,7 +13,7 @@ const envSanStore = useEnvSanStore();
 // 是否有车辆点位渲染
 const { carPointerShow } = toRefs(envSanStore);
 
-
+// 控制车辆图标title的显示与隐藏
 const handCheckVehicleLabel = () => {
   const pointers = document.querySelectorAll(".amap-marker-label");
     // 控制标注显示与隐藏 
@@ -31,8 +31,8 @@ const handCheckVehicleLabel = () => {
   background-size: 100% 100%;
   cursor: pointer;
   position: absolute;
-  top: 10%;
-  right: 120px;
+  top: 5%;
+  right: 30px;
   transition: transform 0.1s ease; /* 添加平滑过渡效果 */
   // @extend .zoom_6;
   zoom: 0.6;
