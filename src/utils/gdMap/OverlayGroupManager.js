@@ -1,8 +1,8 @@
 export default class OverlayGroupManager { //
 
-    overlayType = null //统一管理的marker类型
+    _overlayType = null //统一管理的marker类型
 
-    OverlayGroup = null //图层对象
+    #OverlayGroup = null //图层对象
 
     events = new Map(); //保存事件的集合
 
@@ -20,17 +20,15 @@ export default class OverlayGroupManager { //
 
         const { overlayType, overlays, map } = options;
 
-        this.OverlayGroup = new AMap.OverlayGroup(overlays)
+        this.#OverlayGroup = new AMap.OverlayGroup(overlays)
 
-        this.overlayType = overlayType; //图层类型
+        this._overlayType = overlayType; //图层类型
 
         this.overlayActiveIcon = overlays?.activeIcon || null; //图层激活的图标
 
         this.overlayDefaultIcon = overlays?.defaultIcon || null;
 
-        console.log('----options', options);
-
-        this.OverlayGroup.setMap(map); //设置图层的地图对象
+        this.#OverlayGroup.setMap(map); //设置图层的地图对象
     }
 
     // 添加图层
@@ -46,7 +44,7 @@ export default class OverlayGroupManager { //
             this.addMarkerBindEvent(item) // 绑定事件
         })
 
-        this.OverlayGroup.addOverlays(overlayList)
+        this.#OverlayGroup.addOverlays(overlayList)
     }
 
     removeOverlay(overlays) {
@@ -57,7 +55,7 @@ export default class OverlayGroupManager { //
 
         let overlayList = [].concat(overlays); // 处理传入的参数为数组
 
-        this.OverlayGroup.removeOverlays(overlayList)
+        this.#OverlayGroup.removeOverlays(overlayList)
     }
 
 
@@ -79,7 +77,7 @@ export default class OverlayGroupManager { //
         }
 
         // 获取地图的所有点位，绑定上事件
-        this.OverlayGroup.on(clickType, callback)
+        this.#OverlayGroup.on(clickType, callback)
 
         // 保存事件
         this.events.set(clickType, callback);
@@ -106,7 +104,7 @@ export default class OverlayGroupManager { //
         if (markerId instanceof AMap.Marker) {
             return markerId; // 如果传入的是marker对象，直接返回
         }
-        const marker = this.OverlayGroup.getOverlays().find((item) => {
+        const marker = this.#OverlayGroup.getOverlays().find((item) => {
             return item.getExtData().id === markerId;
         });
 
@@ -133,10 +131,10 @@ export default class OverlayGroupManager { //
         this.activesMarkerIds.push(marker.getExtData().id);
     }
 
-    // 重置激活的marker
+    //HACK  业务场景是单个图标为激活状态 重置激活的marker 
     resetActiveMarker() {
         // 遍历所有的marker，重置 their icon
-        this.OverlayGroup.getOverlays().forEach((item) => {
+        this.#OverlayGroup.getOverlays().forEach((item) => {
             
             if (this.activesMarkerIds.includes(item.getExtData().id)) {
 
@@ -152,6 +150,8 @@ export default class OverlayGroupManager { //
         // 清空激活状态
         this.activesMarkerIds = [];
     }
+
+
 
     // 错误提示
     error(msg) {
