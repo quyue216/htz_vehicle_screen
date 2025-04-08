@@ -29,6 +29,7 @@
     "js-beautify": "^1.14.11",
     "js-cookie": "3.0.5",
     "jsencrypt": "3.3.2",
+    "lodash": "^4.17.21",
     "nprogress": "0.2.0",
     "pinia": "2.1.7",
     "vue": "3.4.0",

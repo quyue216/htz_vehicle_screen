@@ -11,6 +11,8 @@ export default class OverlayGroupManager { //
     overlayActiveIcon = null; //激活的图标
 
     overlayDefaultIcon = null;
+
+    map = null; //图层关联的Map对象
     // 构造函数
     constructor(options) {
 
@@ -28,6 +30,8 @@ export default class OverlayGroupManager { //
 
         this.overlayDefaultIcon = overlays?.defaultIcon || null;
 
+        this.map = map;  //保存图层关联的Map对象
+        
         this.OverlayGroup.setMap(map); //设置图层的地图对象
     }
 
@@ -149,6 +153,12 @@ export default class OverlayGroupManager { //
         });
         // 清空激活状态
         this.activesMarkerIds = [];
+    }
+
+    // 获取点位存储的marker数据
+    getDataOfMarkers(){
+     if(!this.OverlayGroup) return [];
+     return this.OverlayGroup.getOverlays().map((item)=> item.getExtData())
     }
 
     // 错误提示
