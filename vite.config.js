@@ -32,6 +32,10 @@ export default defineConfig(({ mode, command }) => {
       port: 8080,
       host: true,
       open: true,
+      hmr: true,
+      watch: {
+        usePolling: true,   // 修复HMR热更新失效
+        },
       proxy: {
         // https://cn.vitejs.dev/config/#server-proxy
         [VITE_APP_BASE_API]: {
