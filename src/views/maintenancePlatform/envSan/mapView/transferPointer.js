@@ -75,7 +75,7 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
 
     });
     // 检测车辆经纬度是否发生变化
-    updatePointerTimer = setinterval(updatePointer, 5*1000);
+    detectionCarPositionChange();
     // 添加标记到图层
     isLayerCreate = true; // 设置图层显示状态为true
   }
@@ -88,6 +88,15 @@ export function showToiletLayer() {
   }
 }
 
+// 检测车辆经纬度是否发生变化
+export function detectionCarPositionChange(){
+  if (!toiletLayer) return;
+   updatePointerTimer = setInterval(updatePointer, 5*1000);
+}
+// 停止检测车辆经纬度是否发生变化
+export function stopDetectionCarPositionChange(){
+  clearInterval(updatePointerTimer); // 清楚车辆更新定时器
+}
 
 // 隐藏公厕图层
 export function hideToiletLayer() {
@@ -136,7 +145,7 @@ function differenceWith(newData, oldData) {
 }
 
 // 监听地图类型变化
-watch(() => envSanStore.mapActiveType, (newVal) => {
+watch(() => envSanStore.mapActiveType, (newVal,oldVal) => {
   let gdMapUtils = getGdMapUtilsIns() //!获取地图实例
 
   if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
@@ -151,10 +160,18 @@ watch(() => envSanStore.mapActiveType, (newVal) => {
   } else {
     hideToiletLayer(); // 隐藏公厕图层
   }
+  // 离开中转页时，停止检测车辆经纬度是否发生变化
+  if(oldVal === 'zz' && newVal !== 'zz'){
+    stopDetectionCarPositionChange();
+  }
+  // 进入中转页时，开始检测车辆经纬度是否发生变化
+  if(oldVal !== 'zz' && newVal === 'zz'){
+    detectionCarPositionChange();
+  }
 });
 
 // HACK 临时复制公厕函数
 
 onUnmounted(() => {
-  clearInterval(updatePointerTimer); // 清楚车辆更新定时器
+  stopDetectionCarPositionChange() // 清楚车辆更新定时器
 })
