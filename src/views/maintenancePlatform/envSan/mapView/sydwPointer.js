@@ -1,59 +1,62 @@
 import { pointerConfig } from "./mapView.config";
 import { getSydwList } from "@/api/envSan/map.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
-import GdMapUtils from '@/utils/gdMap/gdMapUtils.js'
+import GdMapUtils from '@/utils/gdMap/gdMapUtils.js';
+import { watch, onUnmounted } from 'vue';
+
 const { qyCollectionPoint } = pointerConfig;
 
-// 公厕图层
-let toiletLayer = null;
-// 公厕列表数据
-let toiletList = [];
-// 公厕图层是否显示
-let isGcLayerCreate = false;
+// 图层实例
+let layerInstance = null;
+// 数据列表
+let dataList = [];
+// 图层是否已创建
+let isLayerCreated = false;
 
-//  更新点位定时器 判断走缓存还是拉取数据
-let updatePointerTimer = null;
+// 更新点位定时器
+let updateTimer = null;
 
-const envSanStore = useEnvSanStore()
-const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 实例化地图工具类
-// 创建公厕图层
-export async function createPublicToiletLayer(gdMapUtils) { //TODO 这里可以抽象成一个图层创建方法 
-  // 获取公厕数据
+const envSanStore = useEnvSanStore();
+const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 获取地图工具类实例
+
+// 创建图层
+export async function createLayer(gdMapUtils, config) {
+  // 获取数据
   const result = await getSydwList();
 
   // 处理数据
   if (result.code === 200) {
-    // 加工渲染数据
-   toiletList = result.data.filter((item) => item.jd && item.wd).map((item) => ({
+    dataList = result.data.filter((item) => item.jd && item.wd).map((item) => ({
       lnglat: [item.jd, item.wd],
       extData: {
         id: item.id,
         sydmc: item.sydmc,
         distance: item.distance,
-        status: +item.status!==0,  //1为已收运 0为未收运
+        status: +item.status !== 0,  // 1为已收运，0为未收运
         sydlx: item.sydlx,
       }
     }));
-    // 激活
-    const activeIcon= gdMapUtils.createIcon(
-      qyCollectionPoint.size, 
-      qyCollectionPoint.iconActive,
-      qyCollectionPoint.size, 
-      qyCollectionPoint.pixel
+
+    // 激活图标
+    const activeIcon = gdMapUtils.createIcon(
+      config.size, 
+      config.iconActive,
+      config.size, 
+      config.pixel
     );
     // 默认图标
-    const Icon = gdMapUtils.createIcon(
-      qyCollectionPoint.size, 
-      qyCollectionPoint.icon,
-      qyCollectionPoint.size, 
-      qyCollectionPoint.pixel
-    );          
+    const defaultIcon = gdMapUtils.createIcon(
+      config.size, 
+      config.icon,
+      config.size, 
+      config.pixel
+    );
+
     // 创建海量点渲染
-    toiletLayer = gdMapUtils.createMarkerCluster(toiletList, {
+    layerInstance = gdMapUtils.createMarkerCluster(dataList, {
       gridSize: 80,
-      _renderClusterMarker(context) {  //绘制聚合点时调用
-        
-        const count = toiletList.length;
+      _renderClusterMarker(context) {  // 绘制聚合点时调用
+        const count = dataList.length;
         const factor = Math.pow(context.count / count, 1 / 18);
         const div = document.createElement('div');
         const Hue = 180 - factor * 180;
@@ -76,133 +79,124 @@ export async function createPublicToiletLayer(gdMapUtils) { //TODO 这里可以�
         context.marker.setOffset(Pixel);
         context.marker.setContent(div);
       }, // 自定义聚合点样式
-      _renderMarker:(context)=>{
+      _renderMarker: (context) => {
         const { extData } = context.data[0];
+        const curIcon = extData.status ? activeIcon : defaultIcon;
 
-        const curIcon = extData.status ? activeIcon : Icon;
-        
-        context.marker.setOffset(gdMapUtils.Pixel(...qyCollectionPoint.pixel));
+        context.marker.setOffset(gdMapUtils.Pixel(...config.pixel));
         context.marker.setExtData(extData);
         context.marker.setIcon(curIcon);
-        // 绘制显示的Marker
         context.marker.setLabel({
           offset: gdMapUtils.Pixel(-10, -10),
           content: `<div class="sydw-label display-none ">${extData.sydmc}</div>`,
           direction: 'top',
-          style:{
+          style: {
             fontSize: 18,
             fillColor: "#fff",
             strokeColor: "#e3bc2d",
             strokeWidth: 5,
           }
         });
-      
       }
-    })    
-    // 绑定监听控制label显示
-    toiletLayer.on('click',(e)=>{
-      
-      let clusterData =  e.clusterData
+    });
 
-      if(Array.isArray(clusterData)&&clusterData.length===1){
-        //获取到对应的lable
-        const marker = e.marker;
-        // label显示隐藏
+    // 绑定监听控制label显示
+    layerInstance.on('click', (e) => {
+      
+      const { lnglat, marker ,clusterData} = e
+     
+      if (clusterData.length > 1) { //点击集合样式地图放大一级
+        
+        gdMapUtils.setCenter(lnglat, false);
+        gdMapUtils.map.zoomIn(); // 放大地图
+
+      }else if(clusterData.length === 1){
+        
         marker?.dom?.querySelector('.sydw-label')?.classList?.remove('display-none');
       }
-    })
+    });
 
-    // 添加标记到图层
-    isGcLayerCreate = true; // 设置图层显示状态为true
+    isLayerCreated = true; // 设置图层显示状态为true
   }
 }
 
-// 显示公厕图层
-export function showToiletLayer() {
-  if (toiletLayer && toiletList.length) {
-    toiletLayer.setData(toiletList);
+// 显示图层
+export function showLayer() {
+  if (layerInstance && dataList.length) {
+    layerInstance.setData(dataList);
   }
 }
 
-
-// 隐藏公厕图层
-export function hideToiletLayer() {
-  if (toiletLayer && toiletList.length) {
-    toiletLayer.setData([]);
+// 隐藏图层
+export function hideLayer() {
+  if (layerInstance && dataList.length) {
+    layerInstance.setData([]);
   }
 }
-// 检测车辆经纬度是否发生变化
-export function detectionCarPositionChange(){  
-  if (!toiletLayer) return;
-   updatePointerTimer = setInterval(updatePointer, 5*1000);
-}
-// 停止检测车辆经纬度是否发生变化
-export function stopDetectionCarPositionChange(){
-  clearInterval(updatePointerTimer); // 清楚车辆更新定时器
+
+// 启动检测点位更新
+export function startDetectingPositionChange() {
+  if (!layerInstance) return;
+  updateTimer = setInterval(updatePointer, 5 * 1000);
 }
 
+// 停止检测点位更新
+export function stopDetectingPositionChange() {
+  clearInterval(updateTimer); // 清除定时器
+}
 
 // 更新点位函数
 async function updatePointer() {
+  if (!layerInstance) return; // 如果图层不存在，则不执行后续操作
 
-  if (!toiletLayer) return; // 如果图层不存在，则不执行后续操作
-   
   console.log('更新点位');
 
-  // 获取车辆数据
+  // 获取数据
   const result = await getSydwList();
 
   if (result.code === 200) {
-
-    // 创建标记
-    toiletList = result.data.filter((item) => item.jd && item.wd).map((item) => ({
+    dataList = result.data.filter((item) => item.jd && item.wd).map((item) => ({
       lnglat: [item.jd, item.wd],
       extData: {
         id: item.id,
         sydmc: item.sydmc,
         distance: item.distance,
-        status: +item.status!==0,  //1为已收运 0为未收运
+        status: +item.status !== 0,  // 1为已收运，0为未收运
         sydlx: item.sydlx,
       }
     }));
-    //更新点位数据
-    showToiletLayer();
+    showLayer(); // 更新点位数据
   }
-
 }
 
 // 监听地图类型变化
-watch(() => envSanStore.mapActiveType, (newVal,oldVal) => {
-  let gdMapUtils = getGdMapUtilsIns() //TODO  是否判断具体，某个地图实例初始化之后。 
+watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
+  const gdMapUtils = getGdMapUtilsIns();
 
   if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
 
   if (newVal === 'qy') {
-
-    if (isGcLayerCreate) {
-
-      showToiletLayer(); // 显示公厕图层
+    if (isLayerCreated) {
+      showLayer(); // 显示图层
     } else {
-
-      createPublicToiletLayer(gdMapUtils)
+      createLayer(gdMapUtils, qyCollectionPoint); // 创建图层
     }
   } else {
-
-    hideToiletLayer(); // 隐藏公厕图层
+    hideLayer(); // 隐藏图层
   }
 
-  // 离开中转页时，停止检测车辆经纬度是否发生变化
-  if(oldVal === 'qy' && newVal !== 'qy'){
-    stopDetectionCarPositionChange();
+  // 离开中转页时，停止检测点位更新
+  if (oldVal === 'qy' && newVal !== 'qy') {
+    stopDetectingPositionChange();
   }
-  // 进入中转页时，开始检测车辆经纬度是否发生变化
-  if(oldVal !== 'qy' && newVal === 'qy'){
-    detectionCarPositionChange();
+
+  // 进入中转页时，启动检测点位更新
+  if (oldVal !== 'qy' && newVal === 'qy') {
+    startDetectingPositionChange();
   }
 });
 
-
-// 关闭车辆定时器
+// 组件卸载时，清除定时器
 onUnmounted(() => {
-  stopDetectionCarPositionChange() // 清楚车辆更新定时器
-})
+  stopDetectingPositionChange(); // 清除定时器
+});

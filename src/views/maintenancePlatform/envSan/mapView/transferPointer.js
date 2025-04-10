@@ -1,53 +1,52 @@
 import { pointerConfig } from "./mapView.config";
 import { getCarList } from "@/api/envSan/map.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
-import GdMapUtils from '@/utils/gdMap/gdMapUtils.js'
+import GdMapUtils from '@/utils/gdMap/gdMapUtils.js';
+import { watch, onUnmounted } from 'vue';
+
 const { zzVehicle } = pointerConfig;
 
-const { windowConfig } = zzVehicle;
-// 公厕图层
-let toiletLayer = null;
-// 公厕列表数据
-let pointList = [];
-// 图层是否显示
-let isLayerCreate = false;
+// 图层实例
+let layerInstance = null;
+// 数据列表
+let dataList = [];
+// 图层是否已创建
+let isLayerCreated = false;
 
 let updatePointerTimer = null;
 
-const envSanStore = useEnvSanStore()
-const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 实例化地图工具类
-// 创建公厕图层
-export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象成一个图层创建方法 
+const envSanStore = useEnvSanStore();
+const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 获取地图工具类实例
 
-  // 获取公厕数据
+// 创建图层
+export async function createMarkerLayer(gdMapUtils, config) {
+  // 获取数据
   const result = await getCarList({ tx: 1 });
 
   const icon = new AMap.Icon({
-    image: zzVehicle.icon, // 图标图片 URL
-    size: new AMap.Size(zzVehicle.size[0], zzVehicle.size[1]), // 图标大小
-    imageSize: new AMap.Size(zzVehicle.size[0], zzVehicle.size[1]), // 图片实际大小
-    // anchor: "bottom-center", // 图标锚点位置
+    image: config.icon, // 图标图片 URL
+    size: new AMap.Size(config.size[0], config.size[1]), // 图标大小
+    imageSize: new AMap.Size(config.size[0], config.size[1]), // 图片实际大小
   });
 
   // 处理数据
   if (result.code === 200) {
+    dataList = result.data;
 
-    pointList = result.data;
-    // 创建标记
-    pointList
+    dataList
       .filter(({ jd, wd }) => jd && wd)
-      .forEach((toilet) => {
-        const { jd, wd, cphm: title } = toilet;
+      .forEach((item) => {
+        const { jd, wd, cphm: title } = item;
         // 创建标记
         gdMapUtils.createMarker('zzVehicle', {
           title,
           anchor: "bottom-center",
           icon,
-          activeIcon: zzVehicle.activeIcon,
-          defaultIcon: zzVehicle.icon,
+          activeIcon: config.activeIcon,
+          defaultIcon: config.icon,
           label: {
             content: `<div class="zzVehicle">${title}</div>`,
-            offset: new AMap.Pixel(0, 0), //TODO 弹窗偏移量是如何设置的
+            offset: new AMap.Pixel(0, 0),
             direction: 'top',
           },
           clickable: true,
@@ -55,123 +54,112 @@ export async function createMarkerLayer(gdMapUtils) { //TODO 这里可以抽象�
           zIndex: 1000,
           extData: {
             type: 'zzVehicle',
-            ...toilet
+            ...item
           },
           position: new AMap.LngLat(jd, wd),
         });
-        // return label;
       });
 
-    toiletLayer = gdMapUtils.getOverlayGroupManager('zzVehicle'); // 获取图层对象  
+    layerInstance = gdMapUtils.getOverlayGroupManager('zzVehicle'); // 获取图层对象
 
     gdMapUtils.bindEventMarker('zzVehicle', 'click', (e) => {
-
       const marker = e.target;
-
       if (marker.getExtData().type === 'zzVehicle') {
-        toiletLayer.resetActiveMarker();  // 重置激活的标记
-        toiletLayer.setActiveMarker(marker); // 设置激活的标记
+        layerInstance.resetActiveMarker();  // 重置激活的标记
+        layerInstance.setActiveMarker(marker); // 设置激活的标记
       }
-
     });
+
     // 检测车辆经纬度是否发生变化
-    detectionCarPositionChange();
-    // 添加标记到图层
-    isLayerCreate = true; // 设置图层显示状态为true
+    startDetectingPositionChange();
+
+    isLayerCreated = true; // 设置图层显示状态为true
   }
 }
 
-// 显示公厕图层
-export function showToiletLayer() {
-  if (toiletLayer && pointList.length) {
-    toiletLayer.showOverlay(); // 显示图层
+// 显示图层
+export function showLayer() {
+  if (layerInstance && dataList.length) {
+    layerInstance.showOverlay(); // 显示图层
   }
 }
 
-// 检测车辆经纬度是否发生变化
-export function detectionCarPositionChange(){
-  if (!toiletLayer) return;
-   updatePointerTimer = setInterval(updatePointer, 5*1000);
-}
-// 停止检测车辆经纬度是否发生变化
-export function stopDetectionCarPositionChange(){
-  clearInterval(updatePointerTimer); // 清楚车辆更新定时器
-}
-
-// 隐藏公厕图层
-export function hideToiletLayer() {
-  if (toiletLayer && pointList.length) {
-    toiletLayer.hideOverlay(); // 隐藏图层
+// 隐藏图层
+export function hideLayer() {
+  if (layerInstance && dataList.length) {
+    layerInstance.hideOverlay(); // 隐藏图层
   }
 }
 
+// 启动检测车辆经纬度变化
+export function startDetectingPositionChange() {
+  if (!layerInstance) return;
+  updatePointerTimer = setInterval(updatePointer, 5 * 1000);
+}
 
+// 停止检测车辆经纬度变化
+export function stopDetectingPositionChange() {
+  clearInterval(updatePointerTimer); // 清除定时器
+}
+
+// 更新车辆位置
 async function updatePointer() {
-
-  if (!toiletLayer) return; // 如果图层不存在，则不执行后续操作
+  if (!layerInstance) return; // 如果图层不存在，则不执行后续操作
   // 获取车辆数据
   const result = await getCarList({ tx: 1 });
 
   if (result.code === 200) {
+    const newestDataList = result.data;
+    // 比较新旧数据，找出需要更新的标记
+    const changedData = differenceWith(newestDataList, dataList);
 
-    let newestPointList = result.data;
-    // 创建标记
-    newestPointList
-      .filter(({ jd, wd }) => jd && wd)
-
-    let changeDataOfMarker = differenceWith(newestPointList, pointList);
-
-    changeDataOfMarker.forEach((toilet) => {
-      // 找到当前需要更新的marker
-      let marker = toiletLayer.findLayerMarker(toilet.cphm);
-      // 对marker进行更新  
-      marker.setPosition(new AMap.LngLat(toilet.jd, toilet.wd));
+    changedData.forEach((item) => {
+      const marker = layerInstance.findLayerMarker(item.cphm);
+      if (marker) {
+        marker.setPosition(new AMap.LngLat(item.jd, item.wd));
+      }
     });
-  }
 
+    dataList = newestDataList; // 更新数据列表
+  }
 }
 
-// 比较经纬度是否发生变化
+// 比较新旧数据，找出经纬度发生变化的项
 function differenceWith(newData, oldData) {
-
   return newData.filter((nItem) => {
-    //  查找到旧的数据
-    let result = oldData.find(oItem => nItem.cphm === oItem.cphm)
-
-    if (!result) return true;
-
-    return !(nItem.jd === result.jd && nItem.wd === result.wd)
+    const oldItem = oldData.find(oItem => oItem.cphm === nItem.cphm);
+    return !oldItem || nItem.jd !== oldItem.jd || nItem.wd !== oldItem.wd;
   });
 }
 
 // 监听地图类型变化
-watch(() => envSanStore.mapActiveType, (newVal,oldVal) => {
-  let gdMapUtils = getGdMapUtilsIns() //!获取地图实例
+watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
+  const gdMapUtils = getGdMapUtilsIns(); // 获取地图实例
 
   if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
 
   if (newVal === 'zz') {
-    console.log('显示中转图层');
-    if (isLayerCreate) {
-      showToiletLayer(); // 显示公厕图层
+    if (isLayerCreated) {
+      showLayer(); // 显示图层
     } else {
-      createMarkerLayer(gdMapUtils)
+      createMarkerLayer(gdMapUtils, zzVehicle); // 创建图层
     }
   } else {
-    hideToiletLayer(); // 隐藏公厕图层
+    hideLayer(); // 隐藏图层
   }
-  // 离开中转页时，停止检测车辆经纬度是否发生变化
-  if(oldVal === 'zz' && newVal !== 'zz'){
-    stopDetectionCarPositionChange();
+
+  // 离开中转页时，停止检测车辆经纬度变化
+  if (oldVal === 'zz' && newVal !== 'zz') {
+    stopDetectingPositionChange();
   }
-  // 进入中转页时，开始检测车辆经纬度是否发生变化
-  if(oldVal !== 'zz' && newVal === 'zz'){
-    detectionCarPositionChange();
+
+  // 进入中转页时，启动检测车辆经纬度变化
+  if (oldVal !== 'zz' && newVal === 'zz') {
+    startDetectingPositionChange();
   }
 });
 
-// HACK 临时复制公厕函数
-
+// 组件卸载时，清除定时器
 onUnmounted(() => {
-  stopDetectionCarPositionChange() // 清楚车辆更新定时器
-})
+  stopDetectingPositionChange(); // 清除车辆更新定时器
+});
