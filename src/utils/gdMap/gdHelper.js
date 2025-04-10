@@ -26,7 +26,8 @@ const gdHelperMixin = {
     * @param {[number, number]} imageSize - 图标所用图片的大小，格式为 [width, height]
     * @param {[number, number]} imageOffset - 图标取图的偏移量，格式为 [x, y]
     */
-    createIcon(size, image, imageSize, imageOffset) {
+    createIcon(size, image, imageSize, imageOffset=[0,0]) {
+        
         return new this.AMap.Icon({
             // 图标尺寸
             size: this.Size(...size),
@@ -112,6 +113,14 @@ const gdHelperMixin = {
             ...rest,
         });
         return label;
+    },
+
+    createMarkerCluster(points, { _renderClusterMarker, _renderMarker, gridSize }) {
+        return new AMap.MarkerCluster(this.map, points, {
+            gridSize: gridSize, // 设置网格像素大小
+            renderClusterMarker: _renderClusterMarker, // 自定义聚合点样式
+            renderMarker: _renderMarker, // 自定义非聚合点样式
+        });
     }
 }
 
