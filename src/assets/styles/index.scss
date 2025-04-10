@@ -204,6 +204,7 @@ aside {
   padding: 0;
   border: none;
   color: #fff;
+  background-color: transparent;
   -webkit-user-drag: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -212,6 +213,7 @@ aside {
 }
 
 // 图片不可以被选中
+.amap-marker,
 .amap-icon{
   img {
     -webkit-user-drag: none;
@@ -225,4 +227,9 @@ aside {
 .display-none {
   // display: none;
   visibility: hidden;
+}
+
+.sydw-label{
+color: #000;
+font-size: 17px;
 }
