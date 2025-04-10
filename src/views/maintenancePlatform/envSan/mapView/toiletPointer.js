@@ -1,25 +1,30 @@
 import { pointerConfig } from "./mapView.config";
 import { getToiletList } from "@/api/envSan/map.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
-import GdMapUtils from '@/utils/gdMap/gdMapUtils.js'
-const { publicToilets } = pointerConfig;
-// 公厕图层
-let toiletLayer = null;
-// 公厕列表数据
-let toiletList = [];
-// 公厕图层是否显示
-let isGcLayerCreate = false;
+import GdMapUtils from '@/utils/gdMap/gdMapUtils.js';
 
-const envSanStore = useEnvSanStore()
-const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 实例化地图工具类
-// 创建公厕图层
-export async function createPublicToiletLayer(gdMapUtils) { //TODO 这里可以抽象成一个图层创建方法 
-  // 获取公厕数据
+const { publicToilets } = pointerConfig;
+
+// 图层实例
+let layerInstance = null;
+// 数据列表
+let dataList = [];
+// 图层是否已创建
+let isLayerCreated = false;
+
+const envSanStore = useEnvSanStore();
+const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 获取地图工具类实例
+
+// 创建图层
+export async function createLayer(gdMapUtils,config) {
+  // 获取数据
   const result = await getToiletList();
 
+  if(envSanStore.mapActiveType !== 'gc') return;  //避免网络时间过长用户切换到切tab
+  
   const icon = {
-    image: publicToilets.icon,
-    size: publicToilets.size,
+    image: config.icon,
+    size: config.size,
     anchor: "bottom-center",
   };
 
@@ -30,33 +35,32 @@ export async function createPublicToiletLayer(gdMapUtils) { //TODO 这里可以�
       fillColor: "#fff",
       strokeColor: "#37e9bd",
       strokeWidth: 5,
-
     },
     zooms: [5, 20],
   };
 
   // 处理数据
   if (result.code === 200) {
+    dataList = result.data;
 
-    toiletList = result.data;
     // 创建地图图层
-    toiletLayer = gdMapUtils.createLabelLayer({ zoom: [1, 20], collision: false });
+    layerInstance = gdMapUtils.createLabelLayer({ zoom: [1, 20], collision: false });
 
     // 创建标记
-    let labelMarkers = toiletList
+    let markers = dataList
       .filter(({ jd, wd }) => jd && wd)
-      .map((toilet) => {
-        const { jd, wd, ...extData } = toilet;
+      .map((item) => {
+        const { jd, wd, ...extData } = item;
 
         const position = [jd, wd];
 
         const label = gdMapUtils.createLabelLayerMarker({
           icon: icon,
-          name: publicToilets.className,
+          name: config.className,
           position,
           extData,
           text: {
-            content: toilet.zm,
+            content: item.zm,
             ...text,
           },
         });
@@ -64,48 +68,41 @@ export async function createPublicToiletLayer(gdMapUtils) { //TODO 这里可以�
         return label;
       });
 
-    toiletLayer.add(labelMarkers); // 添加标记到图层
-    // 添加标记到图层
-    isGcLayerCreate = true; // 设置图层显示状态为true
+    layerInstance.add(markers); // 添加标记到图层
+    
+    isLayerCreated = true; // 设置图层创建状态为true
 
-    labelMarkers = null; //[x] 释放内存 这样占用内存会不会少点
+    markers = null; // 释放内存
   }
 }
 
-// 显示公厕图层
-export function showToiletLayer() {
-  if (toiletLayer && toiletList.length) {
-    toiletLayer.show(); // 显示图层
+// 显示图层
+export function showLayer() {
+  if (layerInstance && dataList.length) {
+    layerInstance.show(); // 显示图层
   }
 }
 
-
-// 隐藏公厕图层
-export function hideToiletLayer() {
-  if (toiletLayer && toiletList.length) {
-    toiletLayer.hide(); // 隐藏图层
+// 隐藏图层
+export function hideLayer() {
+  if (layerInstance && dataList.length) {
+    layerInstance.hide(); // 隐藏图层
   }
 }
-
 
 // 监听地图类型变化
 watch(() => envSanStore.mapActiveType, (newVal) => {
-  let gdMapUtils = getGdMapUtilsIns() //!获取地图实例
+  let gdMapUtils = getGdMapUtilsIns(); // 获取地图实例
 
   if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
-  
-  if (newVal === 'gc') {
 
-    if (isGcLayerCreate) {
-      
-      showToiletLayer(); // 显示公厕图层
+  if (newVal === 'gc') {
+    if (isLayerCreated) {
+      showLayer(); // 显示图层
     } else {
-      
-      createPublicToiletLayer(gdMapUtils)
+      createLayer(gdMapUtils,publicToilets); // 创建图层
     }
   } else {
-  
-    hideToiletLayer(); // 隐藏公厕图层
+    hideLayer(); // 隐藏图层
   }
 });
-//FIXME: 函数调用链条构成一个树结构, 合理的创建树干,代码可维护性会更高些
