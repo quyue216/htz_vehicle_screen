@@ -9,6 +9,7 @@ import GdMapUtils from "@/utils/gdMap/gdMapUtils.js";
 import "./toiletPointer.js";
 import "./reducePointer.js"
 import "./transferPointer.js";
+import "./sydwPointer.js"
 // 初始化地图显示
 
 // 初始化高德地图工具

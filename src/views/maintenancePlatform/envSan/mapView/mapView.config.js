@@ -12,6 +12,8 @@ import activeIcon from '@/assets/images/visualCockpit/map/car_icon_active.png';
 import startIcon from '@/assets/images/visualCockpit/map/start_32.png';
 import endIcon from '@/assets/images/visualCockpit/map/end_32.png';
 import moveIcon from '@/assets/images/visualCockpit/map/qyMove.png';
+import sydwIcon from '@/assets/images/visualCockpit/map/sydw_icon.png'
+import sydwActiveIcon from "@/assets/images/visualCockpit/map/sydw_icon_active.png";
 
 // 点位绘制的配置信息抽离出来方便修改
 export const pointerConfig = {
@@ -73,5 +75,16 @@ export const pointerConfig = {
           moveSize: [60, 60],
         },
         updateTime: 10000, // 更新位置定时器时间
+      },
+      qyCollectionPoint: {
+        icon: sydwIcon,
+        iconActive: sydwActiveIcon,
+        className: 'qyCollectionPoint',
+        size: [30, 30],
+        pixel: [0, 0],
+        windowConfig: {
+          offset: [0, -90],
+        },
+        updateTime: 10000, // 更新定时器时间
       },
 };
