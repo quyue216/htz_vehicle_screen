@@ -45,6 +45,7 @@ export const pointerConfig = {
         windowConfig: {
             offset,
         },
+        name:'ys'
     },
     // 公厕
     publicToilets: {
