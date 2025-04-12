@@ -41,8 +41,8 @@ export default class LabelLayerRender {
   async createLayer(gdMapUtils) {
     // 获取数据
     this.#dataList = await this.requestCallback();
-    
-    if (this.envSanStore.mapActiveType !== this.config.name) return;  //避免网络时间过长用户切换到切tab
+   
+    if (!this.shouldSkipLayerCreation) return;  //避免网络时间过长用户切换到切tab
 
     // 创建地图图层
     this.#layerInstance = gdMapUtils.createLabelLayer(this.config.layerOptions);
@@ -50,7 +50,7 @@ export default class LabelLayerRender {
     // 创建标记
     let markers = this.#dataList
       .map((item) => {
-        return this.createOverlay(gdMapUtils,this.config, item);
+        return this.createOverlay(gdMapUtils, this.config, item);
       });
 
     this.#layerInstance.add(markers); // 添加标记到图层
@@ -66,6 +66,9 @@ export default class LabelLayerRender {
       this.#layerInstance.show(); // 显示图层
     }
   }
+  get shouldSkipLayerCreation() {
+    return [this.config.name, 'all'].includes(this.envSanStore.mapActiveType)
+  }
 
   // 隐藏图层
   hideLayer() {
@@ -75,18 +78,19 @@ export default class LabelLayerRender {
   }
 
   // 监听地图类型变化
-  handleMapTypeChange() {
+  handleMapTypeChange(newVal, oldVal) {
 
     let gdMapUtils = this.getGdMapUtilsIns(); // 获取地图实例
 
     if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
 
-    if (this.envSanStore.mapActiveType === this.config.name) {
+
+    if (this.shouldSkipLayerCreation) {
 
       if (this.#isLayerCreated) {
 
         this.showLayer(); // 显示图层
-        
+
       } else {
 
         this.createLayer(gdMapUtils); // 创建图层
