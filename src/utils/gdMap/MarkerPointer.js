@@ -16,20 +16,21 @@ export default class MarkerLayerRender {
     envSanStore = useEnvSanStore(); //!要不要改为参数传递进来 不用把反正是针对当前业务场景
     /**
     * 经纬度坐标，用来描述地图上的一个点位置
-    * @param {Object} layerConfig 图层的config
-    * @param {Function} createMarker  创建marker的方法
+    * @param {Object} config 图层的config
+    * @param {Function} createOverlay  创建marker的方法
     * @param {Function} noWrap  requestCallback  拉去marker请求数据并按规定格式返回
+    * @param {Boolean} detectingPosition 是否检测位置变化
     */
     constructor({ //!没有文档还需要了解内部细节,耗费时间精力
-        layerConfig,
-        createMarker,
+        config,
+        createOverlay,
         requestCallback,
         detectingPosition=false
     }) {
             
-        this.config = layerConfig ?? {}; //保存图层配置
+        this.config = config ?? {}; //保存图层配置
         
-        this.createMarker = createMarker;
+        this.createOverlay = createOverlay;
 
         this.requestCallback = requestCallback;
 
@@ -42,18 +43,17 @@ export default class MarkerLayerRender {
   }
 
   // 创建图层
-  async createMarkerLayer(gdMapUtils) {
+  async createLayer(gdMapUtils) {
     // 获取数据
     this.#dataList = await this.requestCallback();
 
     if (this.config.name !== this.envSanStore.mapActiveType) return; // 接口请求缓慢,避免用户切换菜单
-    console.log('#dataList',this.#dataList);
     
     // 处理数据
     this.#dataList.forEach((item) => {
     //   const { jd, wd, title } = item;
       // 创建标记 用户自己决定创建marker类型
-      this.createMarker(gdMapUtils,this.config,item)
+      this.createOverlay(gdMapUtils,this.config,item)
     });
 
     this.layerInstance = gdMapUtils.getOverlayGroupManager(this.config.className); // 获取图层对象
@@ -68,7 +68,7 @@ export default class MarkerLayerRender {
     });
 
     // 检测车辆经纬度是否发生变化
-    this.detectingPosition && this.startDetectingPositionChange();
+    this.startDetectingPositionChange();
 
     this.isLayerCreated = true; // 设置图层显示状态为true
   }
@@ -89,7 +89,7 @@ export default class MarkerLayerRender {
 
   // 启动检测车辆经纬度变化
   startDetectingPositionChange() {
-    if (!this.layerInstance) return;
+    if (!this.layerInstance && !this.detectingPosition) return;
     this.#updatePointerTimer = setInterval(() => this.updatePointer(), 5 * 1000);
   }
 
@@ -138,7 +138,7 @@ export default class MarkerLayerRender {
       if (this.isLayerCreated) {
         this.showLayer(); // 显示图层
       } else {
-        this.createMarkerLayer(gdMapUtils); // 创建图层
+        this.createLayer(gdMapUtils); // 创建图层
       }
     } else {
       this.hideLayer(); // 隐藏图层

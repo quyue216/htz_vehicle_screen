@@ -25,6 +25,7 @@ export const pointerConfig = {
         windowConfig: {
             offset,
         },
+        name:'zz' // 中转站
     },
     // 末端
     endStation: {
@@ -34,6 +35,7 @@ export const pointerConfig = {
         windowConfig: {
             offset,
         },
+        name:'zz'
     },
     // 压缩
     compressStation: {
@@ -52,6 +54,7 @@ export const pointerConfig = {
         windowConfig: {
             offset,
         },
+        name:'gc'
     },
     // 中转车
     zzVehicle: {
@@ -74,6 +77,7 @@ export const pointerConfig = {
           moveIcon: moveIcon,
           moveSize: [60, 60],
         },
+        name:'zz', // 中转车
         updateTime: 10000, // 更新位置定时器时间
       },
       qyCollectionPoint: {

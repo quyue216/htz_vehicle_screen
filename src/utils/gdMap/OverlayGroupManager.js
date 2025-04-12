@@ -2,7 +2,7 @@ export default class OverlayGroupManager { //
 
     _overlayType = null //统一管理的marker类型
 
-    OverlayGroup = null //图层对象
+    OverlayGroup = null //分组管理对象
 
     events = new Map(); //保存事件的集合
 
@@ -28,14 +28,14 @@ export default class OverlayGroupManager { //
 
         this.overlayActiveIcon = overlays?.activeIcon || null; //图层激活的图标
 
-        this.overlayDefaultIcon = overlays?.defaultIcon || null;
+        this.overlayDefaultIcon = overlays?.defaultIcon || null; //图层默认的图标
 
         this.map = map;  //保存图层关联的Map对象
         
         this.OverlayGroup.setMap(map); //设置图层的地图对象
     }
 
-    // 添加图层
+    // 添加覆盖物
     addOverlay(overlays) {
         if (!overlays) {
             this.error('请传入图层对象');
@@ -50,7 +50,7 @@ export default class OverlayGroupManager { //
 
         this.OverlayGroup.addOverlays(overlayList)
     }
-
+    // 移除覆盖物
     removeOverlay(overlays) {
         if (!overlays) {
             this.error('请传入图层对象');
