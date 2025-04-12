@@ -19,10 +19,12 @@ const envSanStore = useEnvSanStore();
 const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 获取地图工具类实例
 
 // 创建图层
-export async function createMarkerLayer(gdMapUtils, config) {
+async function createMarkerLayer(gdMapUtils, config) {
   // 获取数据
   const result = await getCarList({ tx: 1 });
-
+  
+  if(config.name !== envSanStore.mapActiveType) return; //接口请求缓慢,避免用户切换菜单
+  
   const icon = new AMap.Icon({
     image: config.icon, // 图标图片 URL
     size: new AMap.Size(config.size[0], config.size[1]), // 图标大小
@@ -45,7 +47,7 @@ export async function createMarkerLayer(gdMapUtils, config) {
           activeIcon: config.activeIcon,
           defaultIcon: config.icon,
           label: {
-            content: `<div class="zzVehicle">${title}</div>`,
+            content: `<div class="${config.className}">${title}</div>`,
             offset: new AMap.Pixel(0, 0),
             direction: 'top',
           },
@@ -78,27 +80,27 @@ export async function createMarkerLayer(gdMapUtils, config) {
 }
 
 // 显示图层
-export function showLayer() {
+function showLayer() {
   if (layerInstance && dataList.length) {
     layerInstance.showOverlay(); // 显示图层
   }
 }
 
 // 隐藏图层
-export function hideLayer() {
+function hideLayer() {
   if (layerInstance && dataList.length) {
     layerInstance.hideOverlay(); // 隐藏图层
   }
 }
 
 // 启动检测车辆经纬度变化
-export function startDetectingPositionChange() {
+function startDetectingPositionChange() {
   if (!layerInstance) return;
   updatePointerTimer = setInterval(updatePointer, 5 * 1000);
 }
 
 // 停止检测车辆经纬度变化
-export function stopDetectingPositionChange() {
+function stopDetectingPositionChange() {
   clearInterval(updatePointerTimer); // 清除定时器
 }
 
@@ -108,8 +110,10 @@ async function updatePointer() {
   // 获取车辆数据
   const result = await getCarList({ tx: 1 });
 
+  if(config.name !== envSanStore.mapActiveType) return; //接口请求缓慢,避免用户切换菜单
+
   if (result.code === 200) {
-    const newestDataList = result.data;
+    const newestDataList = result.data;  // 拉取道数据
     // 比较新旧数据，找出需要更新的标记
     const changedData = differenceWith(newestDataList, dataList);
 
@@ -133,7 +137,7 @@ function differenceWith(newData, oldData) {
 }
 
 // 监听地图类型变化
-watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
+function handleMapTypeChange(newVal, oldVal) {
   const gdMapUtils = getGdMapUtilsIns(); // 获取地图实例
 
   if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
@@ -157,7 +161,9 @@ watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
   if (oldVal !== 'zz' && newVal === 'zz') {
     startDetectingPositionChange();
   }
-});
+}
+
+watch(() => envSanStore.mapActiveType, handleMapTypeChange);
 
 // 组件卸载时，清除定时器
 onUnmounted(() => {
