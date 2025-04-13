@@ -16,8 +16,6 @@ import {
   getReduceVolSites,
   getMdzdList,
 } from "@/api/envSan/map.js";
-
-// import "./reducePointer.js";
 import "./sydwPointer.js";
 // 初始化地图显示
 
@@ -50,52 +48,6 @@ const {
   transferStation,
   qyVehicle,
 } = mapViewConfig;
-
-
- 
- const vehicleLayerConfigs = [  { name: "zzVehicleLayer", initFn: initZzVehicleLayer }, //中转车辆,组件卸载需要停止车辆监听
- { name: "qyVehicleLayer", initFn: initQyVehicleLayer }] //清运车辆
-  // 定义图层初始化函数和配置
-  const layerConfigs = [
-    ...vehicleLayerConfigs,
-    { name: "zzPointerLayer", initFn: initZZPointerLayer }, //中转点位
-    { name: "toiletLayer", initFn: initToiletLayer }, //公厕
-    { name: "ReducePointerLayer", initFn: initReducePointerLayer }, //压缩站
-    { name: "endZzPointerLayer", initFn: initEndZzPointerLayer }, //末端站点
-  ];
-
-// 创建地图
-onMounted(async () => {
-  // 初始化地图
-  await gdMapUtils.initMap("gisMap", {
-    resizeEnable: true,
-    rotateEnable: true,
-    pitchEnable: true,
-    center: [121.589604, 31.051637],
-    zooms: [1, 20],
-    zoom: "13.3",
-    showLabel: true,
-    viewMode: "2D",
-    pitch: 50,
-  });
-
-
-  // 初始化所有图层
-  const layers = layerConfigs.map(({ name, initFn }) => {
-    const layer = initFn();
-    return layer;
-  });
-
-  // 监听所有图层的 mapActiveType 变化
-  layers.forEach((layer) => {
-    watch(
-      () => layer.envSanStore.mapActiveType,
-      (...p) => {
-        layer.handleMapTypeChange(...p);
-      }
-    );
-  });
-});
 // 初始化公厕图层
 const initToiletLayer = () => {
   const toiletLayer = new LabelMarkerPointer({
@@ -285,7 +237,7 @@ const initEndZzPointerLayer = () => {
 
   return layer;
 };
-
+// 初始化清运车辆
 const initQyVehicleLayer = () => {
   // 创建转运车辆图层
   const layer = new MarkerLayerRender({
@@ -340,7 +292,7 @@ const initQyVehicleLayer = () => {
   });
   return layer;
 };
-// 初始化清运车辆
+// 初始化中转车辆
 const initZzVehicleLayer = () => {
   // 创建转运车辆图层
   const layer = new MarkerLayerRender({
@@ -459,9 +411,54 @@ const initReducePointerLayer = () => {
   return reduceLayer;
 };
 
+const vehicleLayerConfigs = [
+  { name: "zzVehicleLayer", initFn: initZzVehicleLayer }, //中转车辆,组件卸载需要停止车辆监听
+  { name: "qyVehicleLayer", initFn: initQyVehicleLayer },
+]; //清运车辆
+// 定义图层初始化函数和配置
+const layerConfigs = [
+  ...vehicleLayerConfigs,
+  { name: "zzPointerLayer", initFn: initZZPointerLayer }, //中转点位
+  { name: "toiletLayer", initFn: initToiletLayer }, //公厕
+  { name: "ReducePointerLayer", initFn: initReducePointerLayer }, //压缩站
+  { name: "endZzPointerLayer", initFn: initEndZzPointerLayer }, //末端站点
+];
+
+// 创建地图
+onMounted(async () => {
+  // 初始化地图
+  await gdMapUtils.initMap("gisMap", {
+    resizeEnable: true,
+    rotateEnable: true,
+    pitchEnable: true,
+    center: [121.589604, 31.051637],
+    zooms: [1, 20],
+    zoom: "13.3",
+    showLabel: true,
+    viewMode: "2D",
+    pitch: 50,
+  });
+
+  // 初始化所有图层
+  const layers = layerConfigs.map(({ name, initFn }) => {
+    const layer = initFn();
+    return layer;
+  });
+
+  // 监听所有图层的 mapActiveType 变化
+  layers.forEach((layer) => {
+    watch(
+      () => layer.envSanStore.mapActiveType,
+      (...p) => {
+        layer.handleMapTypeChange(...p);
+      }
+    );
+  });
+});
+
 onUnmounted(() => {
   // 停止所有车辆图层
-  vehicleLayerConfigs.forEach((item)=>item.stopDetectingPositionChange());
+  vehicleLayerConfigs.forEach((item) => item.stopDetectingPositionChange());
 });
 </script>
 

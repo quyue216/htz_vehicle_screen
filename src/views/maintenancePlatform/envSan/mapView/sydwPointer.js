@@ -20,10 +20,11 @@ const envSanStore = useEnvSanStore();
 const getGdMapUtilsIns = (id = "gisMap") => GdMapUtils.mapInstance.get(id); // 获取地图工具类实例
 
 // 创建图层
-export async function createLayer(gdMapUtils, config) {
+async function createLayer(gdMapUtils, config) {
   // 获取数据
   const result = await getSydwList();
-
+  
+  if(!shouldSkipLayerCreation(envSanStore.mapActiveType)) return;
   // 处理数据
   if (result.code === 200) {
     dataList = result.data.filter((item) => item.jd && item.wd).map((item) => ({
@@ -39,16 +40,16 @@ export async function createLayer(gdMapUtils, config) {
 
     // 激活图标
     const activeIcon = gdMapUtils.createIcon(
-      config.size, 
+      config.size,
       config.iconActive,
-      config.size, 
+      config.size,
       config.pixel
     );
     // 默认图标
     const defaultIcon = gdMapUtils.createIcon(
-      config.size, 
+      config.size,
       config.icon,
-      config.size, 
+      config.size,
       config.pixel
     );
 
@@ -102,16 +103,16 @@ export async function createLayer(gdMapUtils, config) {
 
     // 绑定监听控制label显示
     layerInstance.on('click', (e) => {
-      
-      const { lnglat, marker ,clusterData} = e
-     
+
+      const { lnglat, marker, clusterData } = e
+
       if (clusterData.length > 1) { //点击集合样式地图放大一级
-        
+
         gdMapUtils.setCenter(lnglat, false);
         gdMapUtils.map.zoomIn(); // 放大地图
 
-      }else if(clusterData.length === 1){
-        
+      } else if (clusterData.length === 1) {
+
         marker?.dom?.querySelector('.sydw-label')?.classList?.remove('display-none');
       }
     });
@@ -121,27 +122,27 @@ export async function createLayer(gdMapUtils, config) {
 }
 
 // 显示图层
-export function showLayer() {
+function showLayer() {
   if (layerInstance && dataList.length) {
     layerInstance.setData(dataList);
   }
 }
 
 // 隐藏图层
-export function hideLayer() {
+function hideLayer() {
   if (layerInstance && dataList.length) {
     layerInstance.setData([]);
   }
 }
 
 // 启动检测点位更新
-export function startDetectingPositionChange() {
+function startDetectingPositionChange() {
   if (!layerInstance) return;
   updateTimer = setInterval(updatePointer, 5 * 1000);
 }
 
 // 停止检测点位更新
-export function stopDetectingPositionChange() {
+function stopDetectingPositionChange() {
   clearInterval(updateTimer); // 清除定时器
 }
 
@@ -168,6 +169,10 @@ async function updatePointer() {
     showLayer(); // 更新点位数据
   }
 }
+// 判断函数是否继续执行
+function shouldSkipLayerCreation(activeName) {
+  return [qyCollectionPoint.name, 'all'].includes(activeName)
+}
 
 // 监听地图类型变化
 watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
@@ -175,7 +180,7 @@ watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
 
   if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
 
-  if (newVal === 'qy') {
+  if (shouldSkipLayerCreation(newVal)) {
     if (isLayerCreated) {
       showLayer(); // 显示图层
     } else {
@@ -186,12 +191,12 @@ watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
   }
 
   // 离开中转页时，停止检测点位更新
-  if (oldVal === 'qy' && newVal !== 'qy') {
+  if (!shouldSkipLayerCreation(newVal) && shouldSkipLayerCreation(oldVal)) {
     stopDetectingPositionChange();
   }
 
   // 进入中转页时，启动检测点位更新
-  if (oldVal !== 'qy' && newVal === 'qy') {
+  if (shouldSkipLayerCreation(newVal) && !shouldSkipLayerCreation(oldVal)) {
     startDetectingPositionChange();
   }
 });

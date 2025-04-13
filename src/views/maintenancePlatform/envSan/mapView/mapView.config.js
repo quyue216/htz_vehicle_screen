@@ -83,6 +83,7 @@ export const pointerConfig = {
   },
   qyCollectionPoint: {
     icon: sydwIcon,
+    name:'qy',
     iconActive: sydwActiveIcon,
     className: 'qyCollectionPoint',
     size: [30, 30],
