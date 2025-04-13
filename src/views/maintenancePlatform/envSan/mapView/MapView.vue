@@ -9,7 +9,7 @@ import GdMapUtils from "@/utils/gdMap/gdMapUtils.js";
 import MarkerLayerRender from "@/utils/gdMap/MarkerPointer.js";
 import LabelMarkerPointer from "@/utils/gdMap/LabelMarkerPointer.js";
 import { pointerConfig as mapViewConfig } from "./mapView.config.js";
-import { getCarList, getZzZylList, getToiletList ,getReduceVolSites} from "@/api/envSan/map.js";
+import { getCarList, getZzZylList, getToiletList ,getReduceVolSites,getMdzdList} from "@/api/envSan/map.js";
 
 // import "./reducePointer.js";
 import "./sydwPointer.js";
@@ -36,12 +36,13 @@ const gdMapUtils = new GdMapUtils({
   },
 });
 
-const { zzVehicle, endStation, publicToilets ,compressStation} = mapViewConfig;
+const { zzVehicle, endStation, publicToilets ,compressStation,transferStation} = mapViewConfig;
 
 let qyVehicleLayer = null; //中转站清运车辆
 let zzPointerLayer = null; //转运车辆
 let toiletLayer = null; //公厕
 let ReducePointerLayer = null; //压缩站图层
+let endZzPointerLayer = null; //末端站图层
 // 创建地图
 onMounted(async () => {
   // 初始化地图
@@ -66,8 +67,11 @@ onMounted(async () => {
   toiletLayer = initToiletLayer();
 
   ReducePointerLayer= initReducePointerLayer();
+
+  // 初始化末端站图层 
+  endZzPointerLayer = initEndZzPointerLayer();
   // 监听
-  [toiletLayer, qyVehicleLayer,zzPointerLayer,ReducePointerLayer].forEach((item) => {
+  [toiletLayer,endZzPointerLayer, qyVehicleLayer,zzPointerLayer,ReducePointerLayer].forEach((item) => {
     watch(
       () => item.envSanStore.mapActiveType,
       (...p) => {
@@ -76,13 +80,14 @@ onMounted(async () => {
     );
   });
 });
-
+// 初始化公厕图层
 const initToiletLayer = () => {
   const toiletLayer = new LabelMarkerPointer({
     config: {
       ...publicToilets, //展开公厕配置
 
       layerOptions: { zoom: [1, 20], collision: false },
+      extraActiveName:['all']
     },
     createOverlay(gdMapUtils, config, item) {
       //HACK  让我想起了Vue插槽
@@ -143,8 +148,9 @@ const initToiletLayer = () => {
 const initZZPointerLayer = () => {
   const zzPointerLayer = new LabelMarkerPointer({
     config: {
-      ...endStation,
+      ...transferStation,
       layerOptions: { zoom: [1, 20], collision: false },
+      extraActiveName:['all','qy']
     },
 
     createOverlay(gdMapUtils, config, item) {
@@ -178,7 +184,7 @@ const initZZPointerLayer = () => {
       return label;
     },
     async requestCallback() {
-      const result = await getZzZylList({ tx: 1 });
+      const result = await getZzZylList();
       if (result.code === 200) {
         //加工成指定的格式
         return result.data
@@ -200,6 +206,70 @@ const initZZPointerLayer = () => {
 
   return zzPointerLayer;
 };
+
+const initEndZzPointerLayer = ()=>{
+  const layer = new LabelMarkerPointer({
+    config: {
+      ...endStation,
+      layerOptions: { zoom: [1, 20], collision: false },
+      extraActiveName:['qy','all']
+    },
+
+    createOverlay(gdMapUtils, config, item) {
+      const icon = {
+        image: config.icon,
+        size: config.size,
+        anchor: "bottom-center",
+      };
+
+      const text = {
+        direction: "top",
+        style: {
+          fontSize: 18,
+          fillColor: "#fff",
+          strokeColor: "#ffa366",
+          strokeWidth: 5,
+        },
+        zooms: [5, 20],
+      };
+
+      const label = gdMapUtils.createLabelLayerMarker({
+        icon,
+        name: config.className,
+        position: [item.jd, item.wd],
+        extData: item.extData,
+        text: {
+          content: item.title,
+          ...text,
+        },
+      });
+      return label;
+    },
+    async requestCallback() {
+      const result = await getMdzdList();
+      
+      console.log('result',result);
+    
+      if (result.code === 200) {
+        //加工成指定的格式
+        return result.data
+          .filter((f) => f.jd && f.wd)
+          .map((item) => {
+            const { jd, wd, mc, ...extData } = item;
+            return {
+              jd,
+              wd,
+              title: mc,
+              extData,
+            };
+          });
+      }
+      return []; //请求异常返回空数组
+    },
+  });
+
+  return layer;
+}
 
 const initQyVehicleLayer = () => {
   // 创建转运车辆图层
@@ -258,6 +328,7 @@ const initReducePointerLayer = () => {
     config: {
       ...compressStation, //展开公厕配置
       layerOptions: { zoom: [1, 20], collision: false },
+      extraActiveName:['all']
     },
     createOverlay(gdMapUtils, config, item) {
       //HACK  让我想起了Vue插槽
