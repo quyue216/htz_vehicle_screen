@@ -122,7 +122,6 @@ export default class MarkerLayerRender {
       const marker = this.layerInstance.findLayerMarker(item.id);
    
       const iconImage = item.extData.onLine ? this.config.onLineIcon : this.config.icon;
-      console.log('-----',iconImage,item);
       
       if (marker) { //存在的marker需要更新位置和图标
         
