@@ -14,7 +14,7 @@ import endIcon from '@/assets/images/visualCockpit/map/end_32.png';
 import moveIcon from '@/assets/images/visualCockpit/map/qyMove.png';
 import sydwIcon from '@/assets/images/visualCockpit/map/sydw_icon.png'
 import sydwActiveIcon from "@/assets/images/visualCockpit/map/sydw_icon_active.png";
-
+import componyIcon from "@/assets/images/visualCockpit/map/company.png";
 // 点位绘制的配置信息抽离出来方便修改
 export const pointerConfig = {
   // 中转
@@ -116,5 +116,50 @@ export const pointerConfig = {
       moveSize: [60, 60],
     },
     updateTime: 10000, // 更新位置定时器时间
+  },
+  compony: {
+    //公司marker配置
+    icon: componyIcon,
+    size, // 1/1.5  公司图标的大小
+    className: 'compony',
+    windowConfig: {
+      offset,
+    },
+    name:"home",
+    subsidiaryList:[
+      {
+        id: 101,
+        label: '上海浦发环境服务有限公司', //ph
+        lx: 'gs',
+        lon: 121.575437,
+        lat: 31.195609,
+  
+        jd: 121.575437,
+        wd: 31.195609,
+        name: '上海浦发环境服务有限公司',
+      },
+      {
+        id: 202,
+        label: '上海浦东东道园综合养护有限公司',
+        lon: 121.70107924152443,
+        lx: 'gs',
+        lat: 31.187839534137574,
+  
+        jd: 121.70107924152443,
+        wd: 31.187839534137574,
+        name: '上海浦东东道园综合养护有限公司',
+      },
+      {
+        id: 203,
+        label: '上海浦养环境服务有限公司',
+        lon: 121.64904748013274,
+        lx: 'gs',
+        lat: 31.033283580880607,
+  
+        jd: 121.64904748013274,
+        wd: 31.033283580880607,
+        name: '上海浦养环境服务有限公司',
+      },
+    ]
   },
 };

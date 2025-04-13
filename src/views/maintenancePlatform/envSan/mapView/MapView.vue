@@ -47,6 +47,7 @@ const {
   compressStation,
   transferStation,
   qyVehicle,
+  compony,
 } = mapViewConfig;
 // 初始化公厕图层
 const initToiletLayer = () => {
@@ -110,6 +111,62 @@ const initToiletLayer = () => {
   });
 
   return toiletLayer;
+};
+// 初始化公厕图层
+const initCompanyLayer = () => {
+  const layer = new LabelMarkerPointer({
+    config: {
+      ...compony, //展开公厕配置
+      layerOptions: { zoom: [1, 20], collision: false },
+      extraActiveName: ["all"],
+    },
+    createOverlay(gdMapUtils, config, item) {
+      //HACK  让我想起了Vue插槽
+      const icon = {
+        image: config.icon,
+        size: config.size,
+        anchor: "bottom-center",
+      };
+
+      const text = {
+        direction: "top",
+        style: {
+          fontSize: 18,
+          fillColor: "#fff",
+          strokeColor: "#25cdfd",
+          strokeWidth: 5,
+        },
+        zooms: [5, 20],
+      };
+
+      const label = gdMapUtils.createLabelLayerMarker({
+        icon,
+        name: config.className,
+        position: [item.jd, item.wd],
+        extData: item.extData,
+        text: {
+          content: item.title,
+          ...text,
+        },
+      });
+      return label;
+    },
+    async requestCallback() {
+      const data = compony.subsidiaryList;
+      return data.map((item) => {
+        const { jd, wd, label: title, id, ...extData } = item;
+        return {
+          jd,
+          wd,
+          title,
+          id,
+          extData,
+        };
+      });
+    },
+  });
+
+  return layer;
 };
 // 初始化中转站
 const initZZPointerLayer = () => {
@@ -422,6 +479,7 @@ const layerConfigs = [
   { name: "toiletLayer", initFn: initToiletLayer }, //公厕
   { name: "ReducePointerLayer", initFn: initReducePointerLayer }, //压缩站
   { name: "endZzPointerLayer", initFn: initEndZzPointerLayer }, //末端站点
+  { name: "initCompanyLayer", initFn: initCompanyLayer }, //末端站点
 ];
 
 // 创建地图
@@ -451,6 +509,9 @@ onMounted(async () => {
       () => layer.envSanStore.mapActiveType,
       (...p) => {
         layer.handleMapTypeChange(...p);
+      },
+      {
+        immediate: true,
       }
     );
   });
