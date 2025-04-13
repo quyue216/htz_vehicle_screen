@@ -12,6 +12,7 @@ export default class LabelLayerRender {
 
   envSanStore = useEnvSanStore(); // 使用环境状态存储
 
+  extraActiveName =[] // 存储激活图层显示name
   /**
     * 经纬度坐标，用来描述地图上的一个点位置
     * @param {Object} config 图层的config
@@ -30,6 +31,8 @@ export default class LabelLayerRender {
     this.createOverlay = createOverlay;
 
     this.requestCallback = requestCallback;
+    
+    this.extraActiveName = this?.config?.extraActiveName ?? []; //图层额外的激活数组
   }
 
   // 获取地图工具类实例
@@ -67,7 +70,7 @@ export default class LabelLayerRender {
     }
   }
   get shouldSkipLayerCreation() {
-    return [this.config.name, 'all'].includes(this.envSanStore.mapActiveType)
+    return [this.config.name,...this.extraActiveName].includes(this.envSanStore.mapActiveType)
   }
 
   // 隐藏图层
