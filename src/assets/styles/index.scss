@@ -191,7 +191,7 @@ aside {
   }
 }
 // 中转点位样式
-.zzVehicle {
+.zzVehicle ,.qyVehicle{
   background-color: rgba(27, 204, 253, 0.6588);
   border-radius: 2px;
   padding: 10px 15px;
@@ -200,21 +200,21 @@ aside {
 }
 
 // 设置标注样式
-.amap-marker-label{
+.amap-marker-label {
   padding: 0;
   border: none;
   color: #fff;
   background-color: transparent;
   -webkit-user-drag: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 // 图片不可以被选中
 .amap-marker,
-.amap-icon{
+.amap-icon {
   img {
     -webkit-user-drag: none;
     -webkit-user-select: none;
@@ -229,7 +229,7 @@ aside {
   visibility: hidden;
 }
 
-.sydw-label{
-color: #000;
-font-size: 17px;
+.sydw-label {
+  color: #000;
+  font-size: 17px;
 }

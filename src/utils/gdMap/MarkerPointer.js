@@ -14,6 +14,8 @@ export default class MarkerLayerRender {
   detectingPosition = null //检测位置的变化
 
   envSanStore = useEnvSanStore(); //!要不要改为参数传递进来 不用把反正是针对当前业务场景
+
+  extraActiveName = []; 
   /**
   * 经纬度坐标，用来描述地图上的一个点位置
   * @param {Object} config 图层的config
@@ -35,6 +37,8 @@ export default class MarkerLayerRender {
     this.requestCallback = requestCallback;
 
     this.detectingPosition = detectingPosition;
+
+    this.extraActiveName = this.config?.extraActiveName ?? [];
   }
 
   // 获取地图工具类实例
@@ -47,7 +51,7 @@ export default class MarkerLayerRender {
     // 获取数据
     this.#dataList = await this.requestCallback();
 
-    if (!this.shouldSkipLayerCreation) return; // 接口请求缓慢,避免用户切换菜单
+    if (!this.shouldSkipLayerCreation()) return; // 接口请求缓慢,避免用户切换菜单
 
     // 处理数据
     this.#dataList.forEach((item) => {
@@ -68,7 +72,7 @@ export default class MarkerLayerRender {
     });
 
     // 检测车辆经纬度是否发生变化
-    this.startDetectingPositionChange();
+    this.startDetectingPositionChange(gdMapUtils);
 
     this.isLayerCreated = true; // 设置图层显示状态为true
   }
@@ -87,14 +91,15 @@ export default class MarkerLayerRender {
     }
   }
 
-  get shouldSkipLayerCreation() {
-    return [this.config.name, 'all'].includes(this.envSanStore.mapActiveType)
+  // 由get 访问器描述符  相较于getter函数不能传递更多参数
+  shouldSkipLayerCreation(activeName = this.envSanStore.mapActiveType) {
+    return [this.config.name, ...this.extraActiveName].includes(activeName)
   }
   // 启动检测车辆经纬度变化
-  startDetectingPositionChange() {
+  startDetectingPositionChange(getGdMapUtilsIns) {
     if (!this.layerInstance && !this.detectingPosition) return;
     this.stopDetectingPositionChange(); //先停止在开启,避免多次执行
-    this.#updatePointerTimer = setInterval(() => this.updatePointer(), this.config.updateTime);
+    this.#updatePointerTimer = setInterval(() => this.updatePointer(getGdMapUtilsIns), this.config.updateTime);
   }
 
   // 停止检测车辆经纬度变化
@@ -103,7 +108,7 @@ export default class MarkerLayerRender {
   }
 
   // 更新车辆位置
-  async updatePointer() {
+  async updatePointer(getGdMapUtilsIns) {
     if (!this.layerInstance) return; // 如果图层不存在，则不执行后续操作
     // 获取车辆数据
     const newestDataList = await this.requestCallback();
@@ -115,8 +120,20 @@ export default class MarkerLayerRender {
 
     changedData.forEach((item) => {
       const marker = this.layerInstance.findLayerMarker(item.id);
-      if (marker) {
-        marker.setPosition(GdMapUtils.LngLat(item.jd, item.wd)); //HACK 不清楚其余类型maker是否存在这个方法
+   
+      const iconImage = item.extData.onLine ? this.config.onLineIcon : this.config.icon;
+      console.log('-----',iconImage,item);
+      
+      if (marker) { //存在的marker需要更新位置和图标
+        
+        marker.setPosition(getGdMapUtilsIns.LngLat(item.jd, item.wd)); //HACK 不清楚其余类型maker是否存在这个方法
+
+        const icon = getGdMapUtilsIns.createIcon(this.config.size, iconImage, this.config.size);
+
+        marker.setIcon(icon)
+
+      }else{ //没有的marker需要重新创建
+        this.createOverlay(getGdMapUtilsIns, iconImage, item)
       }
     });
 
@@ -137,7 +154,7 @@ export default class MarkerLayerRender {
 
     if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
    
-    if (this.shouldSkipLayerCreation) {
+    if (this.shouldSkipLayerCreation()) {
 
       if (this.isLayerCreated) {
         this.showLayer(); // 显示图层
@@ -148,15 +165,16 @@ export default class MarkerLayerRender {
     } else {
       this.hideLayer(); // 隐藏图层
     }
-    const allLayerShow = newVal === 'all';
+
+    
     // 离开中转页时，停止检测车辆经纬度变化
-    if ((oldVal === this.config.name && newVal !== this.config.name) || (allLayerShow && newVal !== 'all')) {
+    if (this.shouldSkipLayerCreation(oldVal) && !this.shouldSkipLayerCreation(newVal)) {
       this.stopDetectingPositionChange();
     }
 
     // 进入中转页时，启动检测车辆经纬度变化
-    if ((oldVal !== this.config.name && newVal === this.config.name) || allLayerShow) {
-      this.startDetectingPositionChange();
+    if (this.shouldSkipLayerCreation(newVal) && !this.shouldSkipLayerCreation(oldVal)) {
+      this.startDetectingPositionChange(gdMapUtils);
     }
   }
 }

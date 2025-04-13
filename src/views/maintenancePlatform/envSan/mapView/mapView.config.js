@@ -17,79 +17,103 @@ import sydwActiveIcon from "@/assets/images/visualCockpit/map/sydw_icon_active.p
 
 // 点位绘制的配置信息抽离出来方便修改
 export const pointerConfig = {
-    // 中转
-    transferStation: {
-        icon: zzIcon,
-        className: 'transferStation',
-        size,
-        windowConfig: {
-            offset,
-        },
-        name:'zz' // 中转站
+  // 中转
+  transferStation: {
+    icon: zzIcon,
+    className: 'transferStation',
+    size,
+    windowConfig: {
+      offset,
     },
-    // 末端
-    endStation: {
-        icon: fscIcon,
-        className: 'endStation',
-        size,
-        windowConfig: {
-            offset,
-        },
-        name:'zz'
+    name: 'zz' // 中转站
+  },
+  // 末端
+  endStation: {
+    icon: fscIcon,
+    className: 'endStation',
+    size,
+    windowConfig: {
+      offset,
     },
-    // 压缩
-    compressStation: {
-        icon: ysIcon,
-        className: 'compressStation',
-        size,
-        windowConfig: {
-            offset,
-        },
-        name:'ys'
+    name: 'zz'
+  },
+  // 压缩
+  compressStation: {
+    icon: ysIcon,
+    className: 'compressStation',
+    size,
+    windowConfig: {
+      offset,
     },
-    // 公厕
-    publicToilets: {
-        icon: gcIcon,
-        className: 'publicToilets',
-        size,
-        windowConfig: {
-            offset,
-        },
-        name:'gc'
+    name: 'ys'
+  },
+  // 公厕
+  publicToilets: {
+    icon: gcIcon,
+    className: 'publicToilets',
+    size,
+    windowConfig: {
+      offset,
     },
-    // 中转车
-    zzVehicle: {
-        icon: defaultIcon,
-        onLineIcon: onLineIcon,
-        activeIcon: activeIcon,
-        className: 'zzVehicle',
-        size,
-        windowConfig: {
-          offset,
-        },
-        pathConfig: {
-          startIcon: startIcon,
-          endIcon: endIcon,
-          moveIcon: moveIcon,
-          size: [40, 40],
-          moveSize: [60, 60],
-        },
-        workConfig: {
-          moveIcon: moveIcon,
-          moveSize: [60, 60],
-        },
-        name:'zz', // 中转车
-        updateTime: 10000, // 更新位置定时器时间
-      },
-      qyCollectionPoint: {
-        icon: sydwIcon,
-        iconActive: sydwActiveIcon,
-        className: 'qyCollectionPoint',
-        size: [30, 30],
-        pixel: [0, 0],
-        windowConfig: {
-          offset: [0, -90],
-        },
-        updateTime: 10000, // 更新定时器时间
-      },
+    name: 'gc'
+  },
+  // 中转车
+  zzVehicle: {
+    icon: defaultIcon,
+    onLineIcon: onLineIcon,
+    activeIcon: activeIcon,
+    className: 'zzVehicle',
+    size,
+    windowConfig: {
+      offset,
+    },
+    pathConfig: {
+      startIcon: startIcon,
+      endIcon: endIcon,
+      moveIcon: moveIcon,
+      size: [40, 40],
+      moveSize: [60, 60],
+    },
+    workConfig: {
+      moveIcon: moveIcon,
+      moveSize: [60, 60],
+    },
+    name: 'zz', // 中转车
+    updateTime: 10000, // 更新位置定时器时间
+  },
+  qyCollectionPoint: {
+    icon: sydwIcon,
+    iconActive: sydwActiveIcon,
+    className: 'qyCollectionPoint',
+    size: [30, 30],
+    pixel: [0, 0],
+    windowConfig: {
+      offset: [0, -90],
+    },
+    updateTime: 10000, // 更新定时器时间
+  },
+  // 清运车
+  qyVehicle: {
+    icon: defaultIcon,
+    onLineIcon: onLineIcon,
+    activeIcon: activeIcon,
+    className: 'qyVehicle',
+    size,
+    name:'qy',
+    windowConfig: {
+      offset,
+    },
+    pathConfig: {
+      startIcon: startIcon,
+      endIcon: endIcon,
+      moveIcon: moveIcon,
+      size: [40, 40],
+      moveSize: [60, 60],
+    },
+    workConfig: {
+      moveIcon: moveIcon,
+      moveSize: [60, 60],
+    },
+    updateTime: 10000, // 更新位置定时器时间
+  },
 };
