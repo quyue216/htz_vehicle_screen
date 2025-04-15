@@ -8,6 +8,7 @@
 import GdMapUtils from "@/utils/gdMap/gdMapUtils.js";
 import MarkerLayerRender from "@/utils/gdMap/MarkerPointer.js";
 import LabelMarkerPointer from "@/utils/gdMap/LabelMarkerPointer.js";
+import useEnvSanStore from "@/store/modules/envSan.js";
 import { pointerConfig as mapViewConfig } from "./mapView.config.js";
 import {
   getCarList,
@@ -18,7 +19,7 @@ import {
 } from "@/api/envSan/map.js";
 import "./sydwPointer.js";
 // 初始化地图显示
-
+const envSanStore = useEnvSanStore();
 // 初始化高德地图工具
 const gdMapUtils = new GdMapUtils({
   version: "2.0",
@@ -504,17 +505,12 @@ onMounted(async () => {
   });
 
   // 监听所有图层的 mapActiveType 变化
-  layers.forEach((layer) => {
-    watch(
-      () => layer.envSanStore.mapActiveType,
-      (...p) => {
-        layer.handleMapTypeChange(...p);
-      },
-      {
-        immediate: true,
-      }
-    );
-  });
+  watch(()=>envSanStore.mapActiveType, (...p) => {
+    layers.forEach((layer) => layer.handleMapTypeChange(...p));
+ },{
+  immediate: true
+ })
+
 });
 
 onUnmounted(() => {
