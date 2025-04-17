@@ -10,12 +10,20 @@ import MarkerLayerRender from "@/utils/gdMap/MarkerPointer.js";
 import LabelMarkerPointer from "@/utils/gdMap/LabelMarkerPointer.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
 import { pointerConfig as mapViewConfig } from "./mapView.config.js";
+import { mapInfoToKeyValue } from "@/utils/ruoyi.js";
 import {
   getCarList,
   getZzZylList,
   getToiletList,
   getReduceVolSites,
   getMdzdList,
+  getTransferPointInfo,
+} from "@/api/envSan/map.js";
+import {
+  getCarInfo,
+  getZzzInfo,
+  getToiletInfo,
+  getRedeVolInfo,
 } from "@/api/envSan/map.js";
 import getComponentDom from "@/utils/getComponentDom.js";
 import "./sydwPointer.js";
@@ -102,12 +110,13 @@ const initToiletLayer = () => {
         return result.data
           .filter((f) => f.jd && f.wd)
           .map((item) => {
-            const { jd, wd, zm, id, ...extData } = item;
+            const { jd, wd, zm, ...extData } = item;
+
             return {
               jd,
               wd,
               title: zm,
-              id,
+              id: zm,
               extData: {
                 ...extData,
                 type: publicToilets.className,
@@ -170,6 +179,7 @@ const initCompanyLayer = () => {
           id,
           extData: {
             type: compony.className,
+            id,
             ...extData,
           },
         };
@@ -471,6 +481,8 @@ const initReducePointerLayer = () => {
           .filter((f) => f.jd && f.wd)
           .map((item) => {
             const { jd, wd, zm, id, ...extData } = item;
+            console.log("item", item);
+
             return {
               jd,
               wd,
@@ -479,6 +491,7 @@ const initReducePointerLayer = () => {
               extData: {
                 ...extData,
                 type: compressStation.className,
+                id,
               },
             };
           });
@@ -506,7 +519,7 @@ const layerConfigs = [
 
 // 绑定图层图标点击事件,点击创建信息弹框
 gdMapUtils.on("pointerClick", (marker, e, map, config) => {
-  if (config.className === "endStation") return; //!末端站点不显示弹框
+  if (config.className === endStation.className) return; //!末端站点不显示弹框
   // 先关闭pointer弹框
   envSanStore.closeBasicPointerShow();
 
@@ -527,7 +540,7 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   pointerBasicInfo = {
     extData: marker.getExtData(),
     config: config,
-    marker 
+    marker,
   };
 
   gdMapUtils.openInfoWindow(infoWindow);
@@ -574,14 +587,25 @@ onUnmounted(() => {
 // 监听道
 watch(
   () => envSanStore.basicPointerShow,
-  (newVal) => {
+  async (newVal) => {
     // 说明用户已经点击了基本信息
     console.log("newVal", newVal);
-    if (newVal&&pointerBasicInfo) {
+    if (newVal && pointerBasicInfo) {
+      const {
+        config: { windowConfig, className, InfoLabels },
+        extData: pointerItem,
+        marker,
+      } = pointerBasicInfo; //点击点位保存的信息
+      // 获取定位信息并转换为指定格式
+      const infoList = await fetchMarkerData(
+        className,
+        { id: pointerItem.id },
+        InfoLabels
+      );
 
-      const { config:{windowConfig}, extData, marker} = pointerBasicInfo; //点击点位保存的信息
-      
-      const dom = getComponentDom(BasicInfoDialog, {});
+      const dom = getComponentDom(BasicInfoDialog, {
+        infoList: infoList,
+      });
       // 创建infoWindow
       const infoWindow = gdMapUtils.createInfoWindow({
         isCustom: true,
@@ -591,15 +615,15 @@ watch(
         position: marker.getPosition(),
         offset: gdMapUtils.Pixel(...windowConfig.offset),
       });
-      
-      // 点击地图会导致弹框关闭,重置状态
-      infoWindow.on('close',()=>{
-        envSanStore.closeBasicPointerShow();
-      })
-      // 数据使用完毕,销毁掉
-      pointerBasicInfo = null
 
-      gdMapUtils.openInfoWindow(infoWindow)
+      // 点击地图会导致弹框关闭,重置状态
+      infoWindow.on("close", () => {
+        envSanStore.closeBasicPointerShow();
+      });
+      // 数据使用完毕,销毁掉
+      pointerBasicInfo = null;
+
+      gdMapUtils.openInfoWindow(infoWindow);
     } else {
       //关闭所有弹框
       gdMapUtils.clearInfoWindow();
@@ -607,6 +631,63 @@ watch(
     }
   }
 );
+
+/**
+ * 根据标记类型获取对应的数据
+ * @param {string} type - 标记类型
+ * @param {Object} params - 请求参数
+ * @returns {Promise<Array>} - 返回数据数组
+ */
+async function fetchMarkerData(type, params, InfoLabels) {
+  try {
+    let res;
+    switch (type) {
+      case zzVehicle.className:
+      case qyVehicle.className:
+        res = await getCarInfo({ cphm: params.id });
+        break;
+      case transferStation.className:
+        res = await getTransferPointInfo(params.id);
+        break;
+      case compressStation.className:
+        res = await getRedeVolInfo(params.id);
+        break;
+      case publicToilets.className:
+        res = await getToiletInfo(params.id);
+        break;
+      case compony.className:
+        // 查询子公司信息
+        const data = compony.subsidiaryList.find((item) => {
+          return item.id === params.id;
+        });        
+        // 格式与请求返回数据保持一致
+        res = {
+          data,
+          code: data ? 200 : 404,
+        };
+        break;
+      default:
+        throw new Error(`Unsupported marker type: ${type}`);
+    }
+
+    if (res.code !== 200) {
+      throw new Error(`${type}数据查询异常!`);
+    }
+    // 查询车辆信息
+    const isQueryCarInfo = [zzVehicle.className, qyVehicle.className].includes(
+      type
+    );
+
+    // 返回结构与前面不相同
+    const data = isQueryCarInfo ? res.data[0] : res.data;
+    
+    return mapInfoToKeyValue(data, InfoLabels);
+  } catch (error) {
+    console.log("fetchMarkerData error", error);
+    // this.$modal.msgWarning(error.message);
+    return [];
+  }
+}
 </script>
 
 <style scoped lang="scss">

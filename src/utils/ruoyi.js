@@ -249,3 +249,33 @@ export function blobValidate(data) {
 export function mergeConfig(source, target) {
   return Object.assign(source, target);
 }
+
+
+/**
+ * 将信息对象与标签映射转换为键值对数组
+ * 
+ * 该函数接收两个参数：infoObj（信息对象）和labels（标签映射对象）。
+ * 它会根据labels中的键值对，将infoObj中的对应值提取出来，
+ * 并生成一个新的数组，数组中的每个元素是一个对象，包含label和value两个属性。
+ * 
+ * @param {Object} infoObj - 包含具体信息的对象，例如中转站的详细信息。
+ * @param {Object} labels - 包含键值对的对象，键为infoObj中的属性名，值为对应的标签文本。
+ * @returns {Array} - 返回一个数组，数组中的每个元素是一个对象，包含label和value两个属性。
+ * 
+ * @example
+ * const infoObj = { name: "中转站A", address: "地址A", capacity: 100 };
+ * const labels = { name: "名称", address: "地址", capacity: "容量" };
+ * const result = mapInfoToKeyValue(infoObj, labels);
+ * console.log(result);
+ * // 输出：[
+ * //   { label: "名称", value: "中转站A" },
+ * //   { label: "地址", value: "地址A" },
+ * //   { label: "容量", value: 100 }
+ * // ]
+ */
+export function mapInfoToKeyValue(infoObj, labels) {
+  return Object.entries(labels).map(([key, value]) => ({
+    label: value,
+    value: infoObj[key]
+  }));
+}

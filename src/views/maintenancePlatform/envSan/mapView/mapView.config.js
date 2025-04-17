@@ -25,7 +25,15 @@ export const pointerConfig = {
     windowConfig: {
       offset:[0,-110],
     },
-    name: 'zz' // 中转站
+    name: 'zz', // 中转站
+    InfoLabels:{
+      zzxm: "站长姓名",
+      zzdh: "站长电话",
+      zm: "所在站名",
+      dz: "所在地址",
+      byzyl: "本月累计转运量",
+      qyzt: "启用状态"
+    }
   },
   // 末端
   endStation: {
@@ -45,7 +53,16 @@ export const pointerConfig = {
     windowConfig: {
       offset:[0,-110],
     },
-    name: 'ys'
+    name: 'ys',
+    InfoLabels: {
+      bh: "编号",
+      mc: "名称",
+      dz: "地址",
+      glbm: "管理部门",
+      deptId: "保洁单位",
+      kfsj: "开放时间",
+      qysj: "启用时间"
+    }
   },
   // 公厕
   publicToilets: {
@@ -55,7 +72,16 @@ export const pointerConfig = {
     windowConfig: {
       offset:[0,-110],
     },
-    name: 'gc'
+    name: 'gc',
+    InfoLabels:{
+      bh: "编号",
+      sc: "俗称",
+      dz: "地址",
+      deptId: "养护单位",
+      ssjz: "所属街镇",
+      zdmj: "占地面积",
+      jzmj: "建筑面积"
+    }
   },
   // 中转车
   zzVehicle: {
@@ -77,6 +103,13 @@ export const pointerConfig = {
     workConfig: {
       moveIcon: moveIcon,
       moveSize: [60, 60],
+    },
+    InfoLabels :{
+      clbh: "车辆编号",
+      cqdw: "产权单位",
+      deptId: "使用单位",
+      cphm: "车牌号码",
+      cllx: "车辆类型"
     },
     name: 'zz', // 中转车
     updateTime: 10000, // 更新位置定时器时间
@@ -115,6 +148,13 @@ export const pointerConfig = {
       moveIcon: moveIcon,
       moveSize: [60, 60],
     },
+    InfoLabels :{
+      clbh: "车辆编号",
+      cqdw: "产权单位",
+      deptId: "使用单位",
+      cphm: "车牌号码",
+      cllx: "车辆类型"
+    },
     updateTime: 10000, // 更新位置定时器时间
   },
   compony: {
@@ -126,6 +166,12 @@ export const pointerConfig = {
       offset:[0,-110],
     },
     name:"home",
+    InfoLabels : {
+      name: "名称",
+      address: "地址",
+      peopleNumer: "人员总数",
+      carNumer: "车辆总数"
+    },
     subsidiaryList:[
       {
         id: 101,

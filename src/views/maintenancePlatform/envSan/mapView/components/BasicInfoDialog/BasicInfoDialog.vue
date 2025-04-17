@@ -5,10 +5,10 @@
       <i class="icon" @click="closeInfoWindow"></i>
     </div>
     <div v-if="infoList.length > 0" class="content">
-      <p v-for="(item, index) in infoList" :key="index" class="item">
+      <div v-for="(item, index) in infoList" :key="index" class="item">
         <span class="label">{{ item.label }}:</span>
-        <span class="value">{{ item.content }}</span>
-      </p>
+        <span class="value">{{ item.value ?? "暂无" }}</span>
+      </div>
     </div>
     <div v-else class="empty">该车辆数据暂无...</div>
   </div>
@@ -36,7 +36,7 @@ const closeInfoWindow = () => {
 <style lang="scss" scoped>
 .car-info-pop {
   width: 600px;
-  height: 350px;
+  // height: 350px;
   background: url("@/assets/images/visualCockpit/map/centre_pop.png") no-repeat;
   background-size: 100% 100%;
   transform: scale(0.6);
@@ -67,20 +67,28 @@ const closeInfoWindow = () => {
   cursor: pointer;
 }
 
-.car-info-pop .content,.empty {
-  width: 100%;
-  height: 280px;
-  font-size: 28px;
-  padding: 0 20px;
-  padding-left: 30px;
-  color: #fff;
-  letter-spacing: 2px;
+.car-info-pop {
+  .content,
+  .empty {
+    width: 100%;
+    font-size: 28px;
+    padding: 20px 30px;
+    color: #fff;
+    letter-spacing: 2px;
+  }
+
+  .content{
+    display: flex;
+    flex-direction: column;
+    row-gap: 11px;
+  }
 }
 
-.empty{
- display: flex;
- justify-content: center;
- align-items: center;
+.empty {
+  height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .content .item {
