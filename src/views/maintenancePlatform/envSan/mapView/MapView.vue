@@ -507,6 +507,8 @@ const layerConfigs = [
 // 绑定图层图标点击事件,点击创建信息弹框
 gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   if (config.className === "endStation") return; //!末端站点不显示弹框
+  // 先关闭pointer弹框
+  envSanStore.closeBasicPointerShow();
 
   const { windowConfig } = config;
 
@@ -589,7 +591,11 @@ watch(
         position: marker.getPosition(),
         offset: gdMapUtils.Pixel(...windowConfig.offset),
       });
-
+      
+      // 点击地图会导致弹框关闭,重置状态
+      infoWindow.on('close',()=>{
+        envSanStore.closeBasicPointerShow();
+      })
       // 数据使用完毕,销毁掉
       pointerBasicInfo = null
 
