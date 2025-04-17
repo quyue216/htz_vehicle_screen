@@ -20,7 +20,7 @@
           active: typeActive === 'carPath',
         }"
       >
-        <div class="icon">
+        <div class="icon" >
           <i class="icon_record"></i>
         </div>
         <div class="title">车辆轨迹</div>
@@ -43,6 +43,8 @@
 </template>
 
 <script setup>
+import useEnvSanStore from "@/store/modules/envSan.js";
+const envSanStore = useEnvSanStore();
 // 定义 props
 const props = defineProps({
   markerType: {
@@ -51,20 +53,15 @@ const props = defineProps({
   },
 });
 
-// 定义响应式数据
-const typeActive = ref("");
-
 // 定义方法
 const handInfo = () => {
-  typeActive.value = "carInfo";
+  envSanStore.openBasicPointerShow();
 };
 
 const handPath = () => {
-  typeActive.value = "carPath";
 };
 
 const handVideo = () => {
-  typeActive.value = "carVideo";
 };
 </script>
 

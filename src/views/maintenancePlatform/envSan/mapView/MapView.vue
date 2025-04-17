@@ -10,7 +10,6 @@ import MarkerLayerRender from "@/utils/gdMap/MarkerPointer.js";
 import LabelMarkerPointer from "@/utils/gdMap/LabelMarkerPointer.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
 import { pointerConfig as mapViewConfig } from "./mapView.config.js";
-import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
 import {
   getCarList,
   getZzZylList,
@@ -20,6 +19,8 @@ import {
 } from "@/api/envSan/map.js";
 import getComponentDom from "@/utils/getComponentDom.js";
 import "./sydwPointer.js";
+import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
+import BasicInfoDialog from "./components/BasicInfoDialog/BasicInfoDialog.vue";
 // 初始化地图显示
 const envSanStore = useEnvSanStore();
 // 初始化高德地图工具
@@ -52,6 +53,8 @@ const {
   qyVehicle,
   compony,
 } = mapViewConfig;
+
+let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框打开, {}弹框打开
 // 初始化公厕图层
 const initToiletLayer = () => {
   const toiletLayer = new LabelMarkerPointer({
@@ -105,9 +108,9 @@ const initToiletLayer = () => {
               wd,
               title: zm,
               id,
-              extData:{
+              extData: {
                 ...extData,
-                type:publicToilets.className
+                type: publicToilets.className,
               },
             };
           });
@@ -165,8 +168,8 @@ const initCompanyLayer = () => {
           wd,
           title,
           id,
-          extData:{
-            type:compony.className,
+          extData: {
+            type: compony.className,
             ...extData,
           },
         };
@@ -228,9 +231,9 @@ const initZZPointerLayer = () => {
               wd,
               title: zm,
               id: zm,
-              extData:{
+              extData: {
                 ...extData,
-                type:transferStation.className
+                type: transferStation.className,
               },
             };
           });
@@ -295,9 +298,9 @@ const initEndZzPointerLayer = () => {
               jd,
               wd,
               title: mc,
-              extData:{
+              extData: {
                 ...extData,
-                type:endStation.className
+                type: endStation.className,
               },
             };
           });
@@ -473,9 +476,9 @@ const initReducePointerLayer = () => {
               wd,
               title: zm,
               id,
-              extData:{
+              extData: {
                 ...extData,
-                type:compressStation.className
+                type: compressStation.className,
               },
             };
           });
@@ -502,24 +505,31 @@ const layerConfigs = [
 ];
 
 // 绑定图层图标点击事件,点击创建信息弹框
-gdMapUtils.on('pointerClick',(marker,e,map,config)=>{
-  if(config.className === "endStation") return; //!末端站点不显示弹框
-  
-  const {windowConfig} = config;
+gdMapUtils.on("pointerClick", (marker, e, map, config) => {
+  if (config.className === "endStation") return; //!末端站点不显示弹框
 
-  const dom = getComponentDom(PointerMenu,{});
+  const { windowConfig } = config;
+
+  const dom = getComponentDom(PointerMenu, {});
   // 创建infoWindow
   const infoWindow = gdMapUtils.createInfoWindow({
-    isCustom:true,
-    content:dom,
-    closeWhenClickMap:true,
-    anchor: 'bottom-center',
-    position:marker.getPosition(),
-    offset:gdMapUtils.Pixel(...windowConfig.offset)
-  })
+    isCustom: true,
+    content: dom,
+    closeWhenClickMap: true,
+    anchor: "bottom-center",
+    position: marker.getPosition(),
+    offset: gdMapUtils.Pixel(...windowConfig.offset),
+  });
 
-  infoWindow.open(map);
-})
+  // 保存点位基本信息,用于展开弹框
+  pointerBasicInfo = {
+    extData: marker.getExtData(),
+    config: config,
+    marker 
+  };
+
+  gdMapUtils.openInfoWindow(infoWindow);
+});
 // 创建地图
 onMounted(async () => {
   // 初始化地图
@@ -542,19 +552,55 @@ onMounted(async () => {
   });
 
   // 监听所有图层的 mapActiveType 变化
-  watch(()=>envSanStore.mapActiveType, (...p) => {
-    gdMapUtils.clearInfoWindow(); // 切换地图类型时清除所有infoWindow
-    layers.forEach((layer) => layer.handleMapTypeChange(...p));
- },{
-  immediate: true
- })
-
+  watch(
+    () => envSanStore.mapActiveType,
+    (...p) => {
+      gdMapUtils.clearInfoWindow(); // 切换地图类型时清除所有infoWindow
+      layers.forEach((layer) => layer.handleMapTypeChange(...p));
+    },
+    {
+      immediate: true,
+    }
+  );
 });
 
 onUnmounted(() => {
   // 停止所有车辆图层
   vehicleLayerConfigs.forEach((item) => item.stopDetectingPositionChange());
 });
+
+// 监听道
+watch(
+  () => envSanStore.basicPointerShow,
+  (newVal) => {
+    // 说明用户已经点击了基本信息
+    console.log("newVal", newVal);
+    if (newVal&&pointerBasicInfo) {
+
+      const { config:{windowConfig}, extData, marker} = pointerBasicInfo; //点击点位保存的信息
+      
+      const dom = getComponentDom(BasicInfoDialog, {});
+      // 创建infoWindow
+      const infoWindow = gdMapUtils.createInfoWindow({
+        isCustom: true,
+        content: dom,
+        closeWhenClickMap: true,
+        anchor: "bottom-center",
+        position: marker.getPosition(),
+        offset: gdMapUtils.Pixel(...windowConfig.offset),
+      });
+
+      // 数据使用完毕,销毁掉
+      pointerBasicInfo = null
+
+      gdMapUtils.openInfoWindow(infoWindow)
+    } else {
+      //关闭所有弹框
+      gdMapUtils.clearInfoWindow();
+      envSanStore.closeBasicPointerShow();
+    }
+  }
+);
 </script>
 
 <style scoped lang="scss">

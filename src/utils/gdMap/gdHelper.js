@@ -139,6 +139,11 @@ const gdHelperMixin = {
     clearInfoWindow() {
         this.map.clearInfoWindow();
     },
+
+    /* 打开高德信息弹框 */
+    openInfoWindow(infoWindow, ...rest) {
+        infoWindow.open(this.map, ...rest);
+    },
 }
 
 export default gdHelperMixin;
