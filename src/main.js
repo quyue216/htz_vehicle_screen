@@ -4,6 +4,7 @@ import Cookies from 'js-cookie'
 
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import locale from 'element-plus/es/locale/lang/zh-cn'
 
 import '@/assets/styles/index.scss' // global css
@@ -71,6 +72,10 @@ app.use(store)
 app.use(plugins)
 app.use(elementIcons)
 app.component('svg-icon', SvgIcon)
+// 注册所有图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
 
 directive(app)
 
