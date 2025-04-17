@@ -122,7 +122,6 @@ const initCompanyLayer = () => {
       extraActiveName: ["all"],
     },
     createOverlay(gdMapUtils, config, item) {
-      //HACK  让我想起了Vue插槽
       const icon = {
         image: config.icon,
         size: config.size,
@@ -305,7 +304,9 @@ const initQyVehicleLayer = () => {
     },
     detectingPosition: true,
     createOverlay(gdMapUtils, config, item) {
-      const icon = gdMapUtils.createIcon(config.size, config.icon, config.size);
+      const iconImage = item.extData.onLine ? config.onLineIcon : config.icon;
+
+      const icon = gdMapUtils.createIcon(config.size, iconImage, config.size);
 
       return gdMapUtils.createMarker(config.className, {
         title: item.title,
@@ -414,7 +415,6 @@ const initReducePointerLayer = () => {
       extraActiveName: ["all"],
     },
     createOverlay(gdMapUtils, config, item) {
-      //HACK  让我想起了Vue插槽
       const icon = {
         image: config.icon,
         size: config.size,

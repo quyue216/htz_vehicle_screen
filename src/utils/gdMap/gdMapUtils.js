@@ -180,7 +180,6 @@ class GdMapUtils {
     return this.overlayGroupManagerMap.get(overlayType);
   }
 
-  //HACK 更新点位,感觉不优雅
   updateMarker(marker, Opts) {
     if (!marker) {
       return this.error('参数错误');
@@ -206,7 +205,7 @@ class GdMapUtils {
 
   // 清楚所有覆盖物
   removeAllOverlay() {
-    //TODO 清除地图上所有添加的覆盖物(必须采用图层进行管理)
+    //BUG 这里只能移除用overlayGroupManagerManager管理的图层
     this.overlayGroupManagerMap.forEach((overlayGroup) => {
       overlayGroup.OverlayGroup.clearOverlays(); // 清除图层上的所有覆盖物
     });

@@ -34,9 +34,9 @@ export default class MarkerLayerRender {
 
     this.createOverlay = createOverlay;
 
-    this.requestCallback = requestCallback;
+    this.requestCallback = requestCallback;  //
 
-    this.detectingPosition = detectingPosition;
+    this.detectingPosition = detectingPosition; // 是否检测位置变化
 
     this.extraActiveName = this.config?.extraActiveName ?? [];
   }
@@ -120,12 +120,12 @@ export default class MarkerLayerRender {
 
     changedData.forEach((item) => {
       const marker = this.layerInstance.findLayerMarker(item.id);
-   
+    
       const iconImage = item.extData.onLine ? this.config.onLineIcon : this.config.icon;
       
       if (marker) { //存在的marker需要更新位置和图标
         
-        marker.setPosition(getGdMapUtilsIns.LngLat(item.jd, item.wd)); //HACK 不清楚其余类型maker是否存在这个方法
+        marker.setPosition(getGdMapUtilsIns.LngLat(item.jd, item.wd)); 
 
         const icon = getGdMapUtilsIns.createIcon(this.config.size, iconImage, this.config.size);
 
@@ -142,7 +142,7 @@ export default class MarkerLayerRender {
   // 比较新旧数据，找出经纬度发生变化的项
   differenceWith(newData, oldData) {
     return newData.filter((nItem) => {
-      const oldItem = oldData.find(oItem => oItem.id === nItem.id);
+      const oldItem = oldData.find(oItem => oItem.id === nItem.id);  // 没有直接返回
       return !oldItem || nItem.jd !== oldItem.jd || nItem.wd !== oldItem.wd;
     });
   }

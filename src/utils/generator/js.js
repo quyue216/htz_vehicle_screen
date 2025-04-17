@@ -185,7 +185,6 @@ function buildOptions(conf, optionsList) {
  */
 function buildOptionMethod(methodName, model, methodList) {
   const str = `function ${methodName}() {
-    // TODO 发起请求获取数据
     ${model}.value
   }`
   methodList.push(str)
@@ -337,7 +336,6 @@ function buildexport(
       function handelConfirm(){
         ${conf.formRef}.value.validate((valid) => {
           if (!valid) return
-          // TODO 提交表单
 
           close()
           // 回调父级组件
@@ -355,7 +353,6 @@ function buildexport(
     function submitForm() {
       ${conf.formRef}.value.validate((valid) => {
         if (!valid) return
-        // TODO 提交表单
       })
     }
     /**

@@ -23,7 +23,7 @@ export const pointerConfig = {
     className: 'transferStation',
     size,
     windowConfig: {
-      offset,
+      offset:[0,-110],
     },
     name: 'zz' // 中转站
   },
@@ -33,7 +33,7 @@ export const pointerConfig = {
     className: 'endStation',
     size,
     windowConfig: {
-      offset,
+      offset:[0,-110],
     },
     name: 'zz'
   },
@@ -43,7 +43,7 @@ export const pointerConfig = {
     className: 'compressStation',
     size,
     windowConfig: {
-      offset,
+      offset:[0,-110],
     },
     name: 'ys'
   },
@@ -53,7 +53,7 @@ export const pointerConfig = {
     className: 'publicToilets',
     size,
     windowConfig: {
-      offset,
+      offset:[0,-110],
     },
     name: 'gc'
   },
@@ -123,7 +123,7 @@ export const pointerConfig = {
     size, // 1/1.5  公司图标的大小
     className: 'compony',
     windowConfig: {
-      offset,
+      offset:[0,-110],
     },
     name:"home",
     subsidiaryList:[
