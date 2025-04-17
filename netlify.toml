@@ -1,0 +1,8 @@
+[[redirects]]
+  from = "/prod-api/*"
+  to = "https://www.shpfyh.com:8088/:splat"
+  status = 200
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
