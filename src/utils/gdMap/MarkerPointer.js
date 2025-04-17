@@ -65,9 +65,11 @@ export default class MarkerLayerRender {
     //! 不需要响应click的marker如何处理
     gdMapUtils.bindEventMarker(this.config.className, 'click', (e) => {
       const marker = e.target;
+      
       if (marker.getExtData().type === this.config.className) {
         this.layerInstance.resetActiveMarker();  // 重置激活的标记
         this.layerInstance.setActiveMarker(marker); // 设置激活的标记
+        gdMapUtils.trigger('pointerClick', marker,e,gdMapUtils.map,this.config);
       }
     });
 
@@ -177,3 +179,4 @@ export default class MarkerLayerRender {
     }
   }
 }
+// 扩展事件

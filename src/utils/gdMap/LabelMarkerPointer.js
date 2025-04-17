@@ -12,7 +12,7 @@ export default class LabelLayerRender {
 
   envSanStore = useEnvSanStore(); // 使用环境状态存储
 
-  extraActiveName =[] // 存储激活图层显示name
+  extraActiveName = [] // 存储激活图层显示name
   /**
     * 经纬度坐标，用来描述地图上的一个点位置
     * @param {Object} config 图层的config
@@ -31,7 +31,7 @@ export default class LabelLayerRender {
     this.createOverlay = createOverlay;
 
     this.requestCallback = requestCallback;
-    
+
     this.extraActiveName = this?.config?.extraActiveName ?? []; //图层额外的激活数组
   }
 
@@ -44,7 +44,7 @@ export default class LabelLayerRender {
   async createLayer(gdMapUtils) {
     // 获取数据
     this.#dataList = await this.requestCallback();
-   
+
     if (!this.shouldSkipLayerCreation) return;  //避免网络时间过长用户切换到切tab
 
     // 创建地图图层
@@ -57,6 +57,18 @@ export default class LabelLayerRender {
       });
 
     this.#layerInstance.add(markers); // 添加标记到图层
+    //HACK  labelLayer没有统一绑定事件的方法
+    markers.forEach((overlay) => {
+      overlay.on('click', (e) => {
+        const marker = e.target;
+
+        if (marker.getExtData().type === this.config.className) {
+          // 触发全局的地图弹框
+          gdMapUtils.trigger('pointerClick', marker, e, gdMapUtils.map, this.config);
+        
+        }
+      })
+    })
 
     this.#isLayerCreated = true; // 设置图层创建状态为true
 
@@ -70,7 +82,7 @@ export default class LabelLayerRender {
     }
   }
   get shouldSkipLayerCreation() {
-    return [this.config.name,...this.extraActiveName].includes(this.envSanStore.mapActiveType)
+    return [this.config.name, ...this.extraActiveName].includes(this.envSanStore.mapActiveType)
   }
 
   // 隐藏图层

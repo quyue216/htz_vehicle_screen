@@ -10,6 +10,7 @@ import MarkerLayerRender from "@/utils/gdMap/MarkerPointer.js";
 import LabelMarkerPointer from "@/utils/gdMap/LabelMarkerPointer.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
 import { pointerConfig as mapViewConfig } from "./mapView.config.js";
+import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
 import {
   getCarList,
   getZzZylList,
@@ -17,6 +18,7 @@ import {
   getReduceVolSites,
   getMdzdList,
 } from "@/api/envSan/map.js";
+import getComponentDom from "@/utils/getComponentDom.js";
 import "./sydwPointer.js";
 // 初始化地图显示
 const envSanStore = useEnvSanStore();
@@ -103,7 +105,10 @@ const initToiletLayer = () => {
               wd,
               title: zm,
               id,
-              extData,
+              extData:{
+                ...extData,
+                type:publicToilets.className
+              },
             };
           });
       }
@@ -113,7 +118,7 @@ const initToiletLayer = () => {
 
   return toiletLayer;
 };
-// 初始化公厕图层
+// 初始化公司图层
 const initCompanyLayer = () => {
   const layer = new LabelMarkerPointer({
     config: {
@@ -160,7 +165,10 @@ const initCompanyLayer = () => {
           wd,
           title,
           id,
-          extData,
+          extData:{
+            type:compony.className,
+            ...extData,
+          },
         };
       });
     },
@@ -220,7 +228,10 @@ const initZZPointerLayer = () => {
               wd,
               title: zm,
               id: zm,
-              extData,
+              extData:{
+                ...extData,
+                type:transferStation.className
+              },
             };
           });
       }
@@ -284,7 +295,10 @@ const initEndZzPointerLayer = () => {
               jd,
               wd,
               title: mc,
-              extData,
+              extData:{
+                ...extData,
+                type:endStation.className
+              },
             };
           });
       }
@@ -349,6 +363,7 @@ const initQyVehicleLayer = () => {
       return []; //请求异常返回空数组
     },
   });
+
   return layer;
 };
 // 初始化中转车辆
@@ -458,7 +473,10 @@ const initReducePointerLayer = () => {
               wd,
               title: zm,
               id,
-              extData,
+              extData:{
+                ...extData,
+                type:compressStation.className
+              },
             };
           });
       }
@@ -483,6 +501,25 @@ const layerConfigs = [
   { name: "initCompanyLayer", initFn: initCompanyLayer }, //末端站点
 ];
 
+// 绑定图层图标点击事件,点击创建信息弹框
+gdMapUtils.on('pointerClick',(marker,e,map,config)=>{
+  if(config.className === "endStation") return; //!末端站点不显示弹框
+  
+  const {windowConfig} = config;
+
+  const dom = getComponentDom(PointerMenu,{});
+  // 创建infoWindow
+  const infoWindow = gdMapUtils.createInfoWindow({
+    isCustom:true,
+    content:dom,
+    closeWhenClickMap:true,
+    anchor: 'bottom-center',
+    position:marker.getPosition(),
+    offset:gdMapUtils.Pixel(...windowConfig.offset)
+  })
+
+  infoWindow.open(map);
+})
 // 创建地图
 onMounted(async () => {
   // 初始化地图
@@ -506,6 +543,7 @@ onMounted(async () => {
 
   // 监听所有图层的 mapActiveType 变化
   watch(()=>envSanStore.mapActiveType, (...p) => {
+    gdMapUtils.clearInfoWindow(); // 切换地图类型时清除所有infoWindow
     layers.forEach((layer) => layer.handleMapTypeChange(...p));
  },{
   immediate: true
