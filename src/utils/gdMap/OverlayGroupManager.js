@@ -87,7 +87,6 @@ export default class OverlayGroupManager { //
         this.events.set(clickType, callback);
     }
 
-    //HACK  是否调用群组功能来重新绑定 新增的marker绑定事件
     addMarkerBindEvent(marker) {
 
         // 获取对应marker的事件，绑定给对应的marker
@@ -124,7 +123,7 @@ export default class OverlayGroupManager { //
             return this.error('markerId is not found or this.overlayActiveIcon is null')
         }
 
-        const curOpts = marker.getIcon()._opts;  //HACK  是否可以抽取为混入mixin多个类中复用
+        const curOpts = marker.getIcon()._opts; 
 
         const icon = this.createIcon(this.overlayActiveIcon, curOpts); // 创建新图标
 
@@ -135,7 +134,7 @@ export default class OverlayGroupManager { //
         this.activesMarkerIds.push(marker.getExtData().id);
     }
 
-    //HACK  业务场景是单个图标为激活状态 重置激活的marker 
+    //业务场景是单个图标为激活状态 重置激活的marker 
     resetActiveMarker() {
         // 遍历所有的marker，重置 their icon
         this.OverlayGroup.getOverlays().forEach((item) => {
@@ -170,7 +169,7 @@ export default class OverlayGroupManager { //
 
 const gdMixin = {
     // 提取创建 Icon 的逻辑
-    createIcon(imageUrl, iconOpts) { //HACK 单一原则让我想起react 井字棋开发
+    createIcon(imageUrl, iconOpts) { //HACK 单一原则
         return new AMap.Icon({
             image: imageUrl, // 图标图片 URL
             size: new AMap.Size(...iconOpts.size), // 图标大小
