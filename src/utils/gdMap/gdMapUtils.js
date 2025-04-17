@@ -2,6 +2,7 @@ import AMapLoader from '@amap/amap-jsapi-loader';
 import { mergeConfig } from '../ruoyi.js';
 import gdHelperMixin from "./gdHelper.js";  //抽取的高德mixin工具函数
 import OverlayGroupManager from "./OverlayGroupManager.js"
+import eventMixin from "../eventMixin.js";
 
 /**
  * 针对高德的二次封装
@@ -143,7 +144,6 @@ class GdMapUtils {
 
   //创建点位
   createMarker(type, Opts) {
-    //TODO  不要把业务配置写在这里, 只做地图的封装    
     const overlayGroupManager = this.createOverlayGroupManager(Opts, type); // 关联图层管理器
     // 创建图标
     const marker = new AMap.Marker(Opts);
@@ -217,10 +217,11 @@ class GdMapUtils {
     // 调整到合适的视角
     // autoFit && this.map.setFitView();
   }
-
-  //[x] 函数体越写越多能不能拆分一下 拆分了混合工具类
 }
 // 加载工具类方法到gdMapUtils中
-Object.assign(GdMapUtils.prototype, gdHelperMixin);
+Object.assign(GdMapUtils.prototype, {
+  ...eventMixin,
+  ...gdHelperMixin
+});
 
 export default GdMapUtils;
