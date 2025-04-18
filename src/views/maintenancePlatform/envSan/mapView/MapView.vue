@@ -296,8 +296,6 @@ const initEndZzPointerLayer = () => {
     async requestCallback() {
       const result = await getMdzdList();
 
-      console.log("result", result);
-
       if (result.code === 200) {
         //加工成指定的格式
         return result.data
@@ -481,7 +479,6 @@ const initReducePointerLayer = () => {
           .filter((f) => f.jd && f.wd)
           .map((item) => {
             const { jd, wd, zm, id, ...extData } = item;
-            console.log("item", item);
 
             return {
               jd,
@@ -524,7 +521,7 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   envSanStore.closeBasicPointerShow();
 
   const { windowConfig } = config;
-
+ //将.vue转化为DOM 
   const dom = getComponentDom(PointerMenu, {});
   // 创建infoWindow
   const infoWindow = gdMapUtils.createInfoWindow({
@@ -536,7 +533,7 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
     offset: gdMapUtils.Pixel(...windowConfig.offset),
   });
 
-  // 保存点位基本信息,用于展开弹框
+  // 保存点位基本信息,用于展开详情弹框
   pointerBasicInfo = {
     extData: marker.getExtData(),
     config: config,
@@ -584,12 +581,41 @@ onUnmounted(() => {
   vehicleLayerConfigs.forEach((item) => item.stopDetectingPositionChange());
 });
 
-// 监听道
+
+// 绑定图层图标点击事件,点击创建信息弹框
+gdMapUtils.on("pointerClick", (marker, e, map, config) => {
+  if (config.className === endStation.className) return; //!末端站点不显示弹框
+  // 先关闭pointer弹框
+  envSanStore.closeBasicPointerShow();
+
+  const { windowConfig } = config;
+ //将.vue转化为DOM 
+  const dom = getComponentDom(PointerMenu, {});
+  // 创建infoWindow
+  const infoWindow = gdMapUtils.createInfoWindow({
+    isCustom: true,
+    content: dom,
+    closeWhenClickMap: true,
+    anchor: "bottom-center",
+    position: marker.getPosition(),
+    offset: gdMapUtils.Pixel(...windowConfig.offset),
+  });
+
+  // 保存点位基本信息,用于展开详情弹框
+  pointerBasicInfo = {
+    extData: marker.getExtData(),
+    config: config,
+    marker,
+  };
+
+  gdMapUtils.openInfoWindow(infoWindow);
+});
+
+// 监听点位详情打开
 watch(
   () => envSanStore.basicPointerShow,
   async (newVal) => {
     // 说明用户已经点击了基本信息
-    console.log("newVal", newVal);
     if (newVal && pointerBasicInfo) {
       const {
         config: { windowConfig, className, InfoLabels },
