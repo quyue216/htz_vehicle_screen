@@ -178,5 +178,9 @@ export default class MarkerLayerRender {
       this.startDetectingPositionChange(gdMapUtils);
     }
   }
+
+  get dataOfLayer() {
+    return this.#dataList;
+  }
 }
 // 扩展事件

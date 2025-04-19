@@ -115,4 +115,8 @@ export default class LabelLayerRender {
       this.hideLayer(); // 隐藏图层
     }
   }
+
+  get dataOfLayer() {
+    return this.#dataList;
+  }
 }
