@@ -514,34 +514,7 @@ const layerConfigs = [
   { name: "initCompanyLayer", initFn: initCompanyLayer }, //末端站点
 ];
 
-// 绑定图层图标点击事件,点击创建信息弹框
-gdMapUtils.on("pointerClick", (marker, e, map, config) => {
-  if (config.className === endStation.className) return; //!末端站点不显示弹框
-  // 先关闭pointer弹框
-  envSanStore.closeBasicPointerShow();
 
-  const { windowConfig } = config;
- //将.vue转化为DOM 
-  const dom = getComponentDom(PointerMenu, {});
-  // 创建infoWindow
-  const infoWindow = gdMapUtils.createInfoWindow({
-    isCustom: true,
-    content: dom,
-    closeWhenClickMap: true,
-    anchor: "bottom-center",
-    position: marker.getPosition(),
-    offset: gdMapUtils.Pixel(...windowConfig.offset),
-  });
-
-  // 保存点位基本信息,用于展开详情弹框
-  pointerBasicInfo = {
-    extData: marker.getExtData(),
-    config: config,
-    marker,
-  };
-
-  gdMapUtils.openInfoWindow(infoWindow);
-});
 // 创建地图
 onMounted(async () => {
   // 初始化地图
@@ -581,7 +554,6 @@ onUnmounted(() => {
   vehicleLayerConfigs.forEach((item) => item.stopDetectingPositionChange());
 });
 
-
 // 绑定图层图标点击事件,点击创建信息弹框
 gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   if (config.className === endStation.className) return; //!末端站点不显示弹框
@@ -589,7 +561,7 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   envSanStore.closeBasicPointerShow();
 
   const { windowConfig } = config;
- //将.vue转化为DOM 
+  //将.vue转化为DOM
   const dom = getComponentDom(PointerMenu, {});
   // 创建infoWindow
   const infoWindow = gdMapUtils.createInfoWindow({
@@ -615,46 +587,44 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
 watch(
   () => envSanStore.basicPointerShow,
   async (newVal) => {
-    // 说明用户已经点击了基本信息
-    if (newVal && pointerBasicInfo) {
-      const {
-        config: { windowConfig, className, InfoLabels },
-        extData: pointerItem,
-        marker,
-      } = pointerBasicInfo; //点击点位保存的信息
-      // 获取定位信息并转换为指定格式
-      const infoList = await fetchMarkerData(
-        className,
-        { id: pointerItem.id },
-        InfoLabels
-      );
-
-      const dom = getComponentDom(BasicInfoDialog, {
-        infoList: infoList,
-      });
-      // 创建infoWindow
-      const infoWindow = gdMapUtils.createInfoWindow({
-        isCustom: true,
-        content: dom,
-        closeWhenClickMap: true,
-        anchor: "bottom-center",
-        position: marker.getPosition(),
-        offset: gdMapUtils.Pixel(...windowConfig.offset),
-      });
-
-      // 点击地图会导致弹框关闭,重置状态
-      infoWindow.on("close", () => {
-        envSanStore.closeBasicPointerShow();
-      });
-      // 数据使用完毕,销毁掉
-      pointerBasicInfo = null;
-
-      gdMapUtils.openInfoWindow(infoWindow);
-    } else {
-      //关闭所有弹框
-      gdMapUtils.clearInfoWindow();
+    if (!newVal || !pointerBasicInfo) {
+      gdMapUtils.clearInfoWindow(); // 关闭所有弹框
       envSanStore.closeBasicPointerShow();
+      return;
     }
+    const {
+      config: { windowConfig, className, InfoLabels },
+      extData: pointerItem,
+      marker,
+    } = pointerBasicInfo; //点击点位保存的信息
+    // 获取定位信息并转换为指定格式
+    const infoList = await fetchMarkerData(
+      className,
+      { id: pointerItem.id },
+      InfoLabels
+    );
+
+    const dom = getComponentDom(BasicInfoDialog, {
+      infoList: infoList,
+    });
+    // 创建infoWindow
+    const infoWindow = gdMapUtils.createInfoWindow({
+      isCustom: true,
+      content: dom,
+      closeWhenClickMap: true,
+      anchor: "bottom-center",
+      position: marker.getPosition(),
+      offset: gdMapUtils.Pixel(...windowConfig.offset),
+    });
+
+    // 点击地图会导致弹框关闭,重置状态
+    infoWindow.on("close", () => {
+      envSanStore.closeBasicPointerShow();
+    });
+    // 数据使用完毕,销毁掉
+    pointerBasicInfo = null;
+
+    gdMapUtils.openInfoWindow(infoWindow);
   }
 );
 
@@ -685,7 +655,7 @@ async function fetchMarkerData(type, params, InfoLabels) {
         // 查询子公司信息
         const data = compony.subsidiaryList.find((item) => {
           return item.id === params.id;
-        });        
+        });
         // 格式与请求返回数据保持一致
         res = {
           data,
@@ -706,7 +676,7 @@ async function fetchMarkerData(type, params, InfoLabels) {
 
     // 返回结构与前面不相同
     const data = isQueryCarInfo ? res.data[0] : res.data;
-    
+
     return mapInfoToKeyValue(data, InfoLabels);
   } catch (error) {
     console.log("fetchMarkerData error", error);
