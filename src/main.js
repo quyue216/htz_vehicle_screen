@@ -13,7 +13,7 @@ import App from './App'
 import store from './store'
 import router from './router'
 import directive from './directive' // directive
-
+import  "animate.css"; //加载css动画库
 // 注册指令
 import plugins from './plugins' // plugins
 import { download } from '@/utils/request'
@@ -72,10 +72,10 @@ app.use(store)
 app.use(plugins)
 app.use(elementIcons)
 app.component('svg-icon', SvgIcon)
-// 注册所有图标
+/* // 注册所有图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
-}
+} */
 
 directive(app)
 

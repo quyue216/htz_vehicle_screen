@@ -22,7 +22,7 @@ class GdMapUtils {
   // 地图的配置对象
   mapOpts = {};
 
-  mapTitleLayers = {}; //图层map对象
+  mapTitleLayers = {}; //图层map对象  第三方图层
 
   // 缓存实例集合
   static mapInstance = new Map();

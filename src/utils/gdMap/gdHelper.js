@@ -94,7 +94,7 @@ const gdHelperMixin = {
     },
 
     // 海量点数据
-    createLabelLayer({ zoom = [1, 20], zIndex = 1000, collision = true, ...rest }) {
+    createLabelLayer({ zoom = [1, 20], zIndex = 1000, collision = true, layerClassName,...rest}) {
         const labelLayer = new this.AMap.LabelsLayer({
             zIndex,
             collision,
@@ -102,6 +102,8 @@ const gdHelperMixin = {
             ...rest,
         });
         labelLayer.setMap(this.map);
+        // HACK: labelLayer获取图层节点方式与原来不同，获取可以抽象marker图层,与labelLayer图层,实现多态
+        // this.overlayGroupManagerMap.set(layerClassName,labelLayer);
         return labelLayer;
     },
     // 创建labelMarker标注
