@@ -63,6 +63,11 @@ const {
 } = mapViewConfig;
 
 let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框打开, {}弹框打开
+
+
+const emit = defineEmits(
+["onloadMapLayer"] //图层对象创建完毕,调用此函数
+);
 // 初始化公厕图层
 const initToiletLayer = () => {
   const toiletLayer = new LabelMarkerPointer({
@@ -531,17 +536,18 @@ onMounted(async () => {
   });
 
   // 初始化所有图层
-  const layers = layerConfigs.map(({ name, initFn }) => {
+  const  layerList =  layerConfigs.map(({ name, initFn }) => {
     const layer = initFn();
     return layer;
   });
 
+  emit("onloadMapLayer", layerList);
   // 监听所有图层的 mapActiveType 变化
   watch(
     () => envSanStore.mapActiveType,
     (...p) => {
       gdMapUtils.clearInfoWindow(); // 切换地图类型时清除所有infoWindow
-      layers.forEach((layer) => layer.handleMapTypeChange(...p));
+      layerList.forEach((layer) => layer.handleMapTypeChange(...p));
     },
     {
       immediate: true,
