@@ -50,9 +50,14 @@ const envSanStore = useEnvSanStore();
 // 定义响应式数据
 // const mapSearchShow = ref(true); // 控制搜索容器的显示
 const isSelectShow = ref(false); // 控制搜索内容的显示
-const activeLabel = ref(""); // 当前选中的标签
+const activeLabel = ref("车辆"); // 当前选中的标签
 const searchValue = ref(""); // 搜索框的值
-const selectTypeList = ref([]); // 类型列表
+const selectTypeList = ref([
+    { label: '车辆', disabled: false },
+    { label: '中转站', disabled: false },
+    { label: '压缩站', disabled: false },
+    { label: '公厕', disabled: false }
+  ]); // 类型列表
 const selectList = ref([
   { id: 1, label: "点位1" },
   { id: 2, label: "点位2" },
