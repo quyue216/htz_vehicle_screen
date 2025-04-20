@@ -43,8 +43,12 @@
 <script setup>
 // 切换数据组件
 import CheckTab from "./checkTab.vue";
+import useEnvSanStore from "@/store/modules/envSan.js";
+
+// 创建核心仓库
+const envSanStore = useEnvSanStore();
 // 定义响应式数据
-const mapSearchShow = ref(true); // 控制搜索容器的显示
+// const mapSearchShow = ref(true); // 控制搜索容器的显示
 const isSelectShow = ref(false); // 控制搜索内容的显示
 const activeLabel = ref(""); // 当前选中的标签
 const searchValue = ref(""); // 搜索框的值
@@ -65,6 +69,9 @@ const selectList = ref([
 const props = defineProps(["allLayerData"]);
 
 const layerList = computed(() => props.allLayerData);
+
+// 确定显示的菜单
+const mapSearchShow = computed(() => envSanStore.mapActiveType!== "home");
 
 // 方法
 const checkSearch = () => {
