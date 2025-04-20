@@ -22,17 +22,16 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  activeLabel: {
-    type: String,
-    required: true,
-  },
 });
 
 const emit = defineEmits(["update:activeLabel", "handClick"]);
-
+// 激活label
+const activeLabel = defineModel('activeLabel',{
+  required: true,
+})
 const handClick = (item) => {
   if (!item.disabled) {
-    emit("update:activeLabel", item.label);
+    activeLabel.value = item.label;
     emit("handClick", item);
   }
 };

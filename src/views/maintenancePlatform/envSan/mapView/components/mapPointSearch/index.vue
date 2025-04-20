@@ -50,14 +50,8 @@ const envSanStore = useEnvSanStore();
 // 定义响应式数据
 // const mapSearchShow = ref(true); // 控制搜索容器的显示
 const isSelectShow = ref(false); // 控制搜索内容的显示
-const activeLabel = ref("车辆"); // 当前选中的标签
 const searchValue = ref(""); // 搜索框的值
-const selectTypeList = ref([
-    { label: '车辆', disabled: false },
-    { label: '中转站', disabled: false },
-    { label: '压缩站', disabled: false },
-    { label: '公厕', disabled: false }
-  ]); // 类型列表
+
 const selectList = ref([
   { id: 1, label: "点位1" },
   { id: 2, label: "点位2" },
@@ -76,8 +70,56 @@ const props = defineProps(["allLayerData"]);
 const layerList = computed(() => props.allLayerData);
 
 // 确定显示的菜单
-const mapSearchShow = computed(() => envSanStore.mapActiveType!== "home");
+const mapSearchShow = computed(() => envSanStore.mapActiveType !== "home");
 
+const activeLabel = ref("车辆"); // 当前选中的标签
+
+const selectTypeList = computed(() => {
+  // 初始化 tabs 数组，所有项默认未禁用
+  const tabs = [
+    { label: "车辆", disabled: false },
+    { label: "中转站", disabled: false },
+    { label: "压缩站", disabled: false },
+    { label: "公厕", disabled: false },
+  ];
+
+  const mapActiveType = envSanStore.mapActiveType;
+
+  // 根据 mapActiveType 动态调整 tabs 中的 disabled 状态
+  switch (mapActiveType) {
+    case "all":
+      // all 模式下，所有项均未禁用（默认状态，无需额外处理）
+      break;
+    case "qy":
+    case "zz":
+      // qy 和 zz 模式下，禁用 '车辆' 和 '中转站'
+      tabs[3].disabled = true;
+      tabs[2].disabled = true;
+      break;
+    case "gc":
+    case "ys":
+      tabs.forEach((item) => {
+        item.disabled = true;
+      });
+
+      let index = mapActiveType === "gc" ? tabs.length - 1 : tabs.length - 2;
+
+      tabs[index].disabled = false;
+  }
+
+  return tabs;
+});
+// 计算tab的激活状态
+const computedTabActiveState =() => {
+  const types = {
+    all: "车辆",
+    qy: "车辆",
+    zz: "中转站",
+    gc: "公厕",
+    ys: "压缩站",
+  };
+  return types[envSanStore.mapActiveType];
+};
 // 方法
 const checkSearch = () => {
   isSelectShow.value = !isSelectShow.value; // 切换搜索内容的显示状态
@@ -88,12 +130,16 @@ const clearMapSearch = () => {
 };
 
 const handClick = (data) => {
-  console.log("Tab clicked:", data); // 处理 Tab 点击事件
+  // activeLabel.value = data;
 };
 
 const handleQuery = (value) => {
   console.log("Search query:", value); // 处理搜索事件
 };
+
+watch(()=>envSanStore.mapActiveType,()=>{
+  activeLabel.value = computedTabActiveState();
+})
 </script>
 
 <style lang="scss" scoped>
@@ -164,7 +210,7 @@ const handleQuery = (value) => {
     background-size: 100% 100%;
     color: #fff !important;
     box-shadow: none !important;
-     .el-input__inner {
+    .el-input__inner {
       color: #fff !important;
     }
   }
@@ -196,8 +242,8 @@ const handleQuery = (value) => {
   background: #0b4e8e !important;
 }
 .mySelectStyle .el-select-dropdown__wrap {
-background-color: #0a4680 !important;
-max-height: 150px !important;
+  background-color: #0a4680 !important;
+  max-height: 150px !important;
 }
 //下拉框的链接小方块
 .el-select-dropdown__item.is-active {
@@ -208,7 +254,7 @@ max-height: 150px !important;
 .el-select-dropdown__item.hover,
 //下拉框背景色
 .el-popper.is-light.mySelectStyle {
-  background-color:#0b53979a !important;
+  background-color: #0b53979a !important;
   border: 1px solid #254277 !important;
 }
 
