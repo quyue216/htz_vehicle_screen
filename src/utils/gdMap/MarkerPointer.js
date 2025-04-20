@@ -15,7 +15,7 @@ export default class MarkerLayerRender {
 
   envSanStore = useEnvSanStore(); //!要不要改为参数传递进来 不用把反正是针对当前业务场景
 
-  extraActiveName = []; 
+  activeNames = []; 
   /**
   * 经纬度坐标，用来描述地图上的一个点位置
   * @param {Object} config 图层的config
@@ -38,7 +38,7 @@ export default class MarkerLayerRender {
 
     this.detectingPosition = detectingPosition; // 是否检测位置变化
 
-    this.extraActiveName = this.config?.extraActiveName ?? [];
+    this.activeNames = [...(this?.config?.extraActiveName ?? []),this.config.name];
   }
 
   // 获取地图工具类实例
@@ -95,7 +95,7 @@ export default class MarkerLayerRender {
 
   // 由get 访问器描述符  相较于getter函数不能传递更多参数
   shouldSkipLayerCreation(activeName = this.envSanStore.mapActiveType) {
-    return [this.config.name, ...this.extraActiveName].includes(activeName)
+    return this.activeNames.includes(activeName)
   }
   // 启动检测车辆经纬度变化
   startDetectingPositionChange(getGdMapUtilsIns) {
