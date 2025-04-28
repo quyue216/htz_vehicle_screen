@@ -64,6 +64,8 @@ const {
 
 let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框打开, {}弹框打开
 
+let layerList = null; //存储图层集合
+
 const emit = defineEmits(
   ["onloadMapLayer"] //图层对象创建完毕,调用此函数
 );
@@ -372,6 +374,7 @@ const initQyVehicleLayer = () => {
               title: cphm,
               id: cphm,
               extData,
+              className: qyVehicle.className,
             };
           });
       }
@@ -423,6 +426,7 @@ const initZzVehicleLayer = () => {
           .map((item) => {
             const { jd, wd, cphm, ...extData } = item;
             return {
+              className: zzVehicle.className,
               jd,
               wd,
               title: cphm,
@@ -534,7 +538,7 @@ onMounted(async () => {
   });
 
   // 初始化所有图层
-  const layerList = layerConfigs.map(({ name, initFn }) => {
+  layerList = layerConfigs.map(({ name, initFn }) => {
     const layer = initFn();
     return layer;
   });
@@ -689,8 +693,18 @@ async function fetchMarkerData(type, params, InfoLabels) {
   }
 }
 // 设置地图中心点
-const setMapCenter = (lngLat) => {
-  gdMapUtils.setCenter( lngLat,19);
+const setMapCenter = (lngLat, pointerInfo) => {
+  if (pointerInfo.className) {
+    // 车辆点位才具备此属性
+    // console.log('pointerInfo',pointerInfo);
+    const layer = layerList.find(
+      (item) => item.config.className === pointerInfo.className
+    );
+    // 高亮对应点位
+    layer.highlightMarker(pointerInfo.id);
+  }
+  // 设置地图中心点
+  gdMapUtils.setCenter(lngLat, 20);
 };
 
 defineExpose({

@@ -93,6 +93,20 @@ export default class MarkerLayerRender {
     }
   }
 
+  // 手动触发高亮某个点位
+  highlightMarker(id) {
+    const layerInstance = this.layerInstance;
+    
+    if (!layerInstance) return; // 如果图层不存在，则不执行后续操作
+
+    const marker = layerInstance.findLayerMarker(id);
+
+    if(marker){
+      layerInstance.resetActiveMarker();  // 重置激活的标记
+      layerInstance.setActiveMarker(marker); // 设置激活的标记
+    }
+  }
+
   // 由get 访问器描述符  相较于getter函数不能传递更多参数
   shouldSkipLayerCreation(activeName = this.envSanStore.mapActiveType) {
     return this.activeNames.includes(activeName)

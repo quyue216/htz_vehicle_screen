@@ -31,11 +31,11 @@ const mapViewRef = ref(null);
 const handleLoadMapLayer = (layersData) => {
   layers.value = layersData;
 };
-
+// 设置地图中心点
 const setMapCenter = (pointerInfo) => {
-  const { jd, wd } = pointerInfo;
+  const { jd, wd ,...rest} = pointerInfo;
   // 设置经纬度
-  mapViewRef.value.setMapCenter([jd, wd]);
+  mapViewRef.value.setMapCenter([jd, wd],rest);
 };
 </script>
 
