@@ -559,7 +559,12 @@ onMounted(async () => {
 
 onUnmounted(() => {
   // 停止所有车辆图层
-  vehicleLayerConfigs.forEach((item) => item.stopDetectingPositionChange());
+  const vehicleLayers = [zzVehicle.className, qyVehicle.className];
+  layerList.forEach((item) => {
+    if (vehicleLayers.includes(item.config.name)) {
+      item.stopDetectingPositionChange();
+    }
+  });
 });
 
 // 绑定图层图标点击事件,点击创建信息弹框
