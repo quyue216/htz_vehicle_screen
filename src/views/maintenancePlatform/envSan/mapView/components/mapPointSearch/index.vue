@@ -1,38 +1,42 @@
 <template>
-  <div class="search-container" v-if="mapSearchShow">
-    <div class="search" @click="checkSearch"></div>
+  <div class="search-container" v-if="shouldShowMapSearch">
+    <div class="search" @click="toggleSearchContentVisibility"></div>
     <transition
       enter-active-class="animate__animated animate__backInDown"
       leave-active-class="animate__animated animate__backOutUp"
     >
-      <div id="mapPointSearch" v-show="isSelectShow">
+      <div id="mapPointSearch" v-show="isSearchContentVisible">
         <div class="mapPointSearch-gjTitle">
           <span>点位搜索</span>
           <span>
-            <i class="el-icon-close icon" @click="clearMapSearch"></i>
+            <i class="el-icon-close icon" @click="closeSearchContent"></i>
           </span>
         </div>
         <div class="mapPointSrarch-content">
           <check-tab
-            :typeList="selectTypeList"
-            v-model:activeLabel="activeLabel"
-            @handClick="handClick"
+            :typeList="tabOptionList"
+            v-model:activeLabel="currentlyActiveTabLabel"
+            @handClick="handleTabClick"
           ></check-tab>
           <div class="select-style">
             <el-select
-              v-model="searchValue"
+              v-model="searchInputValue"
               filterable
-              :placeholder="`请选择${activeLabel}`"
+              :placeholder="`请选择${currentlyActiveTabLabel}`"
               popper-class="mySelectStyle"
-              @change="handleQuery"
+              @change="handleSearchQuery"
             >
               <el-option
-                v-for="item in selectList"
+                v-for="item in dropdownOptionList"
                 :key="item.id"
-                :label="item.title.slice(0, 9) + (item.title.length > 9 ? '...' : '')"  
+                :label="
+                  item.title.slice(0, 9) + (item.title.length > 9 ? '...' : '')
+                "
                 :value="item.title"
               >
-                <span class="ellipsis">{{ item.title.slice(0, 9) + (item.title.length > 9 ? '...' : '') }}</span>
+                <span class="ellipsis">{{
+                  item.title.slice(0, 9) + (item.title.length > 9 ? "..." : "")
+                }}</span>
               </el-option>
             </el-select>
           </div>
@@ -50,13 +54,13 @@ import useEnvSanStore from "@/store/modules/envSan.js";
 // 创建核心仓库
 const envSanStore = useEnvSanStore();
 // 定义响应式数据
-const isSelectShow = ref(false); // 控制搜索内容的显示
-const searchValue = ref(""); // 搜索框的值
+const isSearchContentVisible = ref(false); // 控制搜索内容的显示
+const searchInputValue = ref(""); // 搜索框的值
 
-const selectList = ref([]);
+const dropdownOptionList = ref([]);
 
 // tab对应的地图点位
-const tabLayerMapping = {
+const tabToLayerMapping = {
   中转站: ["transferStation", "endStation"],
   清运车辆: ["qyVehicle"],
   中转车辆: ["zzVehicle"],
@@ -68,30 +72,32 @@ const tabLayerMapping = {
 const props = defineProps(["allLayerData"]);
 
 // 图层对象数组
-const layerList = computed(() => props.allLayerData);
+const layerObjectList = computed(() => props.allLayerData);
 
-//用于根据实例查询数据
-const fun = (layers, pointerNames) => {
+// 用于根据实例查询数据
+const getLayerDataByPointerNames = (layers, pointerNames) => {
   // 处理过滤数据
-  const result = layers.filter((layer) => {
+  const filteredLayers = layers.filter((layer) => {
     return pointerNames.includes(layer.config.className);
   });
 
-  let array = [];
+  let combinedData = [];
 
-  result.forEach((item) => {
-    array = array.concat(...item.dataOfLayer);
+  filteredLayers.forEach((layer) => {
+    combinedData = combinedData.concat(...layer.dataOfLayer);
   });
 
-  return array;
+  return combinedData;
 };
 
 // 是否显示地图搜索
-const mapSearchShow = computed(() => envSanStore.mapActiveType !== "home");
+const shouldShowMapSearch = computed(
+  () => envSanStore.mapActiveType !== "home"
+);
 
-const activeLabel = ref("车辆"); // 当前选中的标签
-// j计算tab栏目
-const selectTypeList = computed(() => {
+const currentlyActiveTabLabel = ref("车辆"); // 当前选中的标签
+// 计算tab栏目
+const tabOptionList = computed(() => {
   // 初始化 tabs 数组，所有项默认未禁用
   const tabs = [
     { label: "车辆", disabled: false },
@@ -100,10 +106,10 @@ const selectTypeList = computed(() => {
     { label: "公厕", disabled: false },
   ];
 
-  const mapActiveType = envSanStore.mapActiveType;
+  const currentMapActiveType = envSanStore.mapActiveType;
 
   // 根据 mapActiveType 动态调整 tabs 中的 disabled 状态
-  switch (mapActiveType) {
+  switch (currentMapActiveType) {
     case "all":
       // all 模式下，所有项均未禁用（默认状态，无需额外处理）
       break;
@@ -119,7 +125,8 @@ const selectTypeList = computed(() => {
         item.disabled = true;
       });
 
-      let index = mapActiveType === "gc" ? tabs.length - 1 : tabs.length - 2;
+      let index =
+        currentMapActiveType === "gc" ? tabs.length - 1 : tabs.length - 2;
 
       tabs[index].disabled = false;
   }
@@ -127,61 +134,72 @@ const selectTypeList = computed(() => {
   return tabs;
 });
 // 计算tab的激活状态
-const computedTabActiveState = () => {
-  const types = {
+const calculateActiveTabLabel = () => {
+  const typeToTabMapping = {
     all: "车辆",
     qy: "车辆",
     zz: "中转站",
     gc: "公厕",
     ys: "压缩站",
   };
-  return types[envSanStore.mapActiveType];
+  return typeToTabMapping[envSanStore.mapActiveType];
 };
 // 方法
-const checkSearch = () => {
-  isSelectShow.value = !isSelectShow.value; // 切换搜索内容的显示状态
+const toggleSearchContentVisibility = () => {
+  isSearchContentVisible.value = !isSearchContentVisible.value; // 切换搜索内容的显示状态
 };
 
-const clearMapSearch = () => {
-  isSelectShow.value = false; // 关闭搜索内容
+const closeSearchContent = () => {
+  isSearchContentVisible.value = false; // 关闭搜索内容
 };
 // 点击切换select下拉框数据
-const handClick = (data) => {
- 
-  const layerNames = tabLayerMapping[data];
-  
-  searchValue.value = ""; // 清空搜索框的值
+const handleTabClick = (tabLabel) => {
+  // 是否为清运车辆
+  const isClearVehicle = envSanStore.mapActiveType === "qy";
 
-  selectList.value = fun(layerList.value, layerNames);
+  tabLabel =
+    tabLabel === "车辆" ? (isClearVehicle ? "清运车辆" : "中转车辆") : tabLabel;
+
+  const relevantLayerNames = tabToLayerMapping[tabLabel];
+
+  searchInputValue.value = ""; // 清空搜索框的值
+
+  dropdownOptionList.value = getLayerDataByPointerNames(
+    layerObjectList.value,
+    relevantLayerNames
+  );
 };
 
-const handleQuery = (value) => {
+const handleSearchQuery = (value) => {
   console.log("Search query:", value); // 处理搜索事件
 };
 
-let timer = null;
+let updateDataTimer = null;
 // 地图切换更新 激活label选项, select下拉框数据
 watch(
   () => envSanStore.mapActiveType,
   () => {
-    clearInterval(timer);
-    searchValue.value = ""; // 清空搜索框的值
-    const label = computedTabActiveState();
+    clearInterval(updateDataTimer);
 
-    activeLabel.value = label;
+    searchInputValue.value = ""; // 清空搜索框的值
+    
+    const activeLabel = calculateActiveTabLabel();
 
-    timer = setInterval(() => {
+    currentlyActiveTabLabel.value = activeLabel;
 
-      const layerNames = tabLayerMapping[label];
+    updateDataTimer = setInterval(() => {
+      const relevantLayerNames = tabToLayerMapping[activeLabel];
       // 查询应该展示的点位数据
-      let pointerList = fun(layerList.value, layerNames);
+      let pointerDataList = getLayerDataByPointerNames(
+        layerObjectList.value,
+        relevantLayerNames
+      );
 
-      if (pointerList.length > 0) {
-        clearInterval(timer);
-        selectList.value = pointerList;
+      if (pointerDataList.length > 0) {
+        clearInterval(updateDataTimer);
+        dropdownOptionList.value = pointerDataList;
       }
     }, 1000);
-
   }
 );
 </script>
