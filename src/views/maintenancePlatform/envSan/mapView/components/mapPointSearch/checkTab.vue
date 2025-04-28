@@ -32,7 +32,7 @@ const activeLabel = defineModel('activeLabel',{
 const handClick = (item) => {
   if (!item.disabled) {
     activeLabel.value = item.label;
-    emit("handClick", item);
+    emit("handClick", item.label);
   }
 };
 </script>

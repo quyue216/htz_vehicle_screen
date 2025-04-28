@@ -29,9 +29,11 @@
               <el-option
                 v-for="item in selectList"
                 :key="item.id"
-                :label="item.label"
-                :value="item.label"
-              ></el-option>
+                :label="item.title.slice(0, 9) + (item.title.length > 9 ? '...' : '')"  
+                :value="item.title"
+              >
+                <span class="ellipsis">{{ item.title.slice(0, 9) + (item.title.length > 9 ? '...' : '') }}</span>
+              </el-option>
             </el-select>
           </div>
         </div>
@@ -48,32 +50,47 @@ import useEnvSanStore from "@/store/modules/envSan.js";
 // 创建核心仓库
 const envSanStore = useEnvSanStore();
 // 定义响应式数据
-// const mapSearchShow = ref(true); // 控制搜索容器的显示
 const isSelectShow = ref(false); // 控制搜索内容的显示
 const searchValue = ref(""); // 搜索框的值
 
-const selectList = ref([
-  { id: 1, label: "点位1" },
-  { id: 2, label: "点位2" },
-  { id: 3, label: "点位3" },
-  { id: 4, label: "点位4" },
-  { id: 5, label: "点位5" },
-  { id: 6, label: "点位6" },
-  { id: 7, label: "点位7" },
-  { id: 8, label: "点位8" },
-  { id: 9, label: "点位9" },
-  { id: 10, label: "点位10" },
-]);
+const selectList = ref([]);
+
+// tab对应的地图点位
+const tabLayerMapping = {
+  中转站: ["transferStation", "endStation"],
+  清运车辆: ["qyVehicle"],
+  中转车辆: ["zzVehicle"],
+  车辆: ["qyVehicle", "zzVehicle"],
+  公厕: ["publicToilets"],
+  压缩站: ["compressStation"],
+};
 
 const props = defineProps(["allLayerData"]);
 
+// 图层对象数组
 const layerList = computed(() => props.allLayerData);
 
-// 确定显示的菜单
+//用于根据实例查询数据
+const fun = (layers, pointerNames) => {
+  // 处理过滤数据
+  const result = layers.filter((layer) => {
+    return pointerNames.includes(layer.config.className);
+  });
+
+  let array = [];
+
+  result.forEach((item) => {
+    array = array.concat(...item.dataOfLayer);
+  });
+
+  return array;
+};
+
+// 是否显示地图搜索
 const mapSearchShow = computed(() => envSanStore.mapActiveType !== "home");
 
 const activeLabel = ref("车辆"); // 当前选中的标签
-
+// j计算tab栏目
 const selectTypeList = computed(() => {
   // 初始化 tabs 数组，所有项默认未禁用
   const tabs = [
@@ -92,7 +109,7 @@ const selectTypeList = computed(() => {
       break;
     case "qy":
     case "zz":
-      // qy 和 zz 模式下，禁用 '车辆' 和 '中转站'
+      // qy 和 zz 模式下，启用 '车辆' 和 '中转站'
       tabs[3].disabled = true;
       tabs[2].disabled = true;
       break;
@@ -110,7 +127,7 @@ const selectTypeList = computed(() => {
   return tabs;
 });
 // 计算tab的激活状态
-const computedTabActiveState =() => {
+const computedTabActiveState = () => {
   const types = {
     all: "车辆",
     qy: "车辆",
@@ -128,18 +145,45 @@ const checkSearch = () => {
 const clearMapSearch = () => {
   isSelectShow.value = false; // 关闭搜索内容
 };
-
+// 点击切换select下拉框数据
 const handClick = (data) => {
-  // activeLabel.value = data;
+ 
+  const layerNames = tabLayerMapping[data];
+  
+  searchValue.value = ""; // 清空搜索框的值
+
+  selectList.value = fun(layerList.value, layerNames);
 };
 
 const handleQuery = (value) => {
   console.log("Search query:", value); // 处理搜索事件
 };
 
-watch(()=>envSanStore.mapActiveType,()=>{
-  activeLabel.value = computedTabActiveState();
-})
+let timer = null;
+// 地图切换更新 激活label选项, select下拉框数据
+watch(
+  () => envSanStore.mapActiveType,
+  () => {
+    clearInterval(timer);
+    searchValue.value = ""; // 清空搜索框的值
+    const label = computedTabActiveState();
+
+    activeLabel.value = label;
+
+    timer = setInterval(() => {
+
+      const layerNames = tabLayerMapping[label];
+      // 查询应该展示的点位数据
+      let pointerList = fun(layerList.value, layerNames);
+
+      if (pointerList.length > 0) {
+        clearInterval(timer);
+        selectList.value = pointerList;
+      }
+    }, 1000);
+
+  }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -243,7 +287,7 @@ watch(()=>envSanStore.mapActiveType,()=>{
 }
 .mySelectStyle .el-select-dropdown__wrap {
   background-color: #0a4680 !important;
-  max-height: 150px !important;
+  max-height: 120px !important;
 }
 //下拉框的链接小方块
 .el-select-dropdown__item.is-active {

@@ -24,9 +24,8 @@ const  layers = ref([]);
 
 // 初始化完图层数据
 const handleLoadMapLayer = (layersData)=>{
-  console.log('layersData',layersData);
   
-  layers.value =layersData;
+  layers.value = window.layersData = layersData;
 }
 
 
