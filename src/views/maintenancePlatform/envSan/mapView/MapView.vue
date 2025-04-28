@@ -64,9 +64,8 @@ const {
 
 let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框打开, {}弹框打开
 
-
 const emit = defineEmits(
-["onloadMapLayer"] //图层对象创建完毕,调用此函数
+  ["onloadMapLayer"] //图层对象创建完毕,调用此函数
 );
 // 初始化公厕图层
 const initToiletLayer = () => {
@@ -519,7 +518,6 @@ const layerConfigs = [
   { name: "initCompanyLayer", initFn: initCompanyLayer }, //末端站点
 ];
 
-
 // 创建地图
 onMounted(async () => {
   // 初始化地图
@@ -536,7 +534,7 @@ onMounted(async () => {
   });
 
   // 初始化所有图层
-  const  layerList =  layerConfigs.map(({ name, initFn }) => {
+  const layerList = layerConfigs.map(({ name, initFn }) => {
     const layer = initFn();
     return layer;
   });
@@ -690,6 +688,14 @@ async function fetchMarkerData(type, params, InfoLabels) {
     return [];
   }
 }
+// 设置地图中心点
+const setMapCenter = (lngLat) => {
+  gdMapUtils.setCenter( lngLat,19);
+};
+
+defineExpose({
+  setMapCenter,
+});
 </script>
 
 <style scoped lang="scss">

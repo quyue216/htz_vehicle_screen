@@ -1,10 +1,13 @@
 <template>
   <div class="envSan-screen">
-    <MapView  @onloadMapLayer="handleLoadMapLayer"></MapView>
+    <MapView @onloadMapLayer="handleLoadMapLayer" ref="mapViewRef"></MapView>
     <!-- 车辆点位渲染title控制显示与否 -->
     <VehiclePointerTitleController></VehiclePointerTitleController>
     <!-- 定位查询 -->
-    <mapPointSearch :allLayerData="layers"></mapPointSearch>
+    <mapPointSearch
+      :allLayerData="layers"
+      @onMapCenter="setMapCenter"
+    ></mapPointSearch>
     <footer class="footer-types">
       <BottomNavigation></BottomNavigation>
     </footer>
@@ -20,15 +23,20 @@ import mapPointSearch from "./mapView/components/mapPointSearch/index.vue";
 // 创建环卫仓库
 const envSanStore = useEnvSanStore();
 
-const  layers = ref([]);
+const layers = ref([]);
+
+const mapViewRef = ref(null);
 
 // 初始化完图层数据
-const handleLoadMapLayer = (layersData)=>{
-  
-  layers.value =  layersData;
-}
+const handleLoadMapLayer = (layersData) => {
+  layers.value = layersData;
+};
 
-
+const setMapCenter = (pointerInfo) => {
+  const { jd, wd } = pointerInfo;
+  // 设置经纬度
+  mapViewRef.value.setMapCenter([jd, wd]);
+};
 </script>
 
 <style scoped lang="scss">

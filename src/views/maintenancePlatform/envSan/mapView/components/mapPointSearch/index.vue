@@ -47,6 +47,7 @@
 </template>
 
 <script setup>
+//HACK  写的不好,修改类组件会影响道这边很不好
 // 切换数据组件
 import CheckTab from "./checkTab.vue";
 import useEnvSanStore from "@/store/modules/envSan.js";
@@ -70,6 +71,8 @@ const tabToLayerMapping = {
 };
 
 const props = defineProps(["allLayerData"]);
+
+const emits = defineEmits(["onMapCenter"]);
 
 // 图层对象数组
 const layerObjectList = computed(() => props.allLayerData);
@@ -171,7 +174,10 @@ const handleTabClick = (tabLabel) => {
 };
 
 const handleSearchQuery = (value) => {
-  console.log("Search query:", value); // 处理搜索事件
+  
+  let pointerInfo = dropdownOptionList.value.find(({title})=>{return title===value})
+  
+  pointerInfo&&emits("onMapCenter", pointerInfo);
 };
 
 let updateDataTimer = null;
