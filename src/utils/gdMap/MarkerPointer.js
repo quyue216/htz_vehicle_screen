@@ -3,7 +3,7 @@ import GdMapUtils from '@/utils/gdMap/gdMapUtils.js';
 
 export default class MarkerLayerRender {
 
-  #dataList = []  // 数据列表
+  dataList = []  // 数据列表
 
   #updatePointerTimer = null; // 定时器实例
 
@@ -49,12 +49,12 @@ export default class MarkerLayerRender {
   // 创建图层
   async createLayer(gdMapUtils) {
     // 获取数据
-    this.#dataList = await this.requestCallback();
+    this.dataList = await this.requestCallback();
 
     if (!this.shouldSkipLayerCreation()) return; // 接口请求缓慢,避免用户切换菜单
 
     // 处理数据
-    this.#dataList.forEach((item) => {
+    this.dataList.forEach((item) => {
       //   const { jd, wd, title } = item;
       // 创建标记 用户自己决定创建marker类型
       this.createOverlay(gdMapUtils, this.config, item)
@@ -81,14 +81,14 @@ export default class MarkerLayerRender {
 
   // 显示图层
   showLayer() {
-    if (this.layerInstance && this.#dataList.length) {
+    if (this.layerInstance && this.dataList.length) {
       this.layerInstance.showOverlay(); // 显示图层
     }
   }
 
   // 隐藏图层
   hideLayer() {
-    if (this.layerInstance && this.#dataList.length) {
+    if (this.layerInstance && this.dataList.length) {
       this.layerInstance.hideOverlay(); // 隐藏图层
     }
   }
@@ -118,7 +118,7 @@ export default class MarkerLayerRender {
     if (this.config.name !== this.envSanStore.mapActiveType) return; // 接口请求缓慢,避免用户切换菜单
 
     // 比较新旧数据，找出需要更新的标记
-    const changedData = this.differenceWith(newestDataList, this.#dataList);
+    const changedData = this.differenceWith(newestDataList, this.dataList);
 
     changedData.forEach((item) => {
       const marker = this.layerInstance.findLayerMarker(item.id);
@@ -138,7 +138,7 @@ export default class MarkerLayerRender {
       }
     });
 
-    this.#dataList = newestDataList; // 更新数据列表
+    this.dataList = newestDataList; // 更新数据列表
   }
 
   // 比较新旧数据，找出经纬度发生变化的项
@@ -180,7 +180,7 @@ export default class MarkerLayerRender {
   }
 
   get dataOfLayer() {
-    return this.#dataList;
+    return this.dataList;
   }
 }
 // 扩展事件

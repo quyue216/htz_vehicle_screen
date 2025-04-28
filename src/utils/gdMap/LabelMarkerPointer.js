@@ -4,7 +4,7 @@ import GdMapUtils from '@/utils/gdMap/gdMapUtils.js';
 // 海量点图层渲染封装
 export default class LabelLayerRender {
 
-  #dataList = []; // 数据列表
+  dataList = []; // 数据列表
 
   #layerInstance = null; // 图层实例
 
@@ -43,7 +43,7 @@ export default class LabelLayerRender {
   // 创建图层
   async createLayer(gdMapUtils) {
     // 获取数据
-    this.#dataList = await this.requestCallback();
+    this.dataList = await this.requestCallback();
 
     if (!this.shouldSkipLayerCreation) return;  //避免网络时间过长用户切换到切tab
 
@@ -51,7 +51,7 @@ export default class LabelLayerRender {
     this.#layerInstance = gdMapUtils.createLabelLayer(this.config.layerOptions);
 
     // 创建标记
-    let markers = this.#dataList
+    let markers = this.dataList
       .map((item) => {
         return this.createOverlay(gdMapUtils, this.config, item);
       });
@@ -77,7 +77,7 @@ export default class LabelLayerRender {
 
   // 显示图层
   showLayer() {
-    if (this.#layerInstance && this.#dataList.length) {
+    if (this.#layerInstance && this.dataList.length) {
       this.#layerInstance.show(); // 显示图层
     }
   }
@@ -87,7 +87,7 @@ export default class LabelLayerRender {
 
   // 隐藏图层
   hideLayer() {
-    if (this.#layerInstance && this.#dataList.length) {
+    if (this.#layerInstance && this.dataList.length) {
       this.#layerInstance.hide(); // 隐藏图层
     }
   }
@@ -117,6 +117,6 @@ export default class LabelLayerRender {
   }
 
   get dataOfLayer() {
-    return this.#dataList;
+    return this.dataList;
   }
 }
