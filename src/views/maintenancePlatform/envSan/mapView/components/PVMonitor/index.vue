@@ -1,5 +1,5 @@
 <template>
-  <div class="car-info-pop">
+  <div class="car-info-pop" v-if="dialogVisible">
     <div class="title">
       <span> 车辆视频监测</span>
       <i class="icon" @click="clearVideo"></i>

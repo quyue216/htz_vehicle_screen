@@ -45,23 +45,30 @@
 <script setup>
 import useEnvSanStore from "@/store/modules/envSan.js";
 const envSanStore = useEnvSanStore();
-// 定义 props
+// 定义props
 const props = defineProps({
-  markerType: {
-    type: String,
-    required: true,
+  pointerInfo: {
+    type: Object,
+    default: () => ({}),
   },
 });
+
+// 定义响应式变量 typeActive，初始值设为空字符串
+const typeActive = ref('');
 
 // 定义方法
 const handInfo = () => {
   envSanStore.openBasicPointerShow();
+  typeActive.value = 'carInfo'; // 点击时更新 typeActive 的值
 };
 
 const handPath = () => {
+  typeActive.value = 'carPath'; // 点击时更新 typeActive 的值
 };
 
 const handVideo = () => {
+  envSanStore.openMonitorDialog();
+  typeActive.value = 'carVideo'; // 点击时更新 typeActive 的值
 };
 </script>
 

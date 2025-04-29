@@ -52,6 +52,13 @@ const gdMapUtils = new GdMapUtils({
   },
 });
 
+const showPointerInfo = defineModel("showPointerInfo", {
+  default: ()=>{
+    return {};
+  },
+  type: Object,
+}); //显示点位信息
+
 const {
   zzVehicle,
   endStation,
@@ -573,9 +580,14 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   // 先关闭pointer弹框
   envSanStore.closeBasicPointerShow();
 
-  const { windowConfig } = config;
+  const { windowConfig } = config;  
+  //抛到外面可能使用 
+  showPointerInfo.value = {
+    ...marker.getExtData(),
+  }; //保存当前点击的点位信息
+
   //将.vue转化为DOM
-  const dom = getComponentDom(PointerMenu, {});
+  const dom = getComponentDom(PointerMenu, {pointerInfo: marker.getExtData()});
   // 创建infoWindow
   const infoWindow = gdMapUtils.createInfoWindow({
     isCustom: true,
