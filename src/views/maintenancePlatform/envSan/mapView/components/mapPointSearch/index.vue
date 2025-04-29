@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-//HACK  写的不好,修改类组件会影响道这边很不好
+//HACK  直接导入类获取所有的实例中的数据,会不会更好
 // 切换数据组件
 import CheckTab from "./checkTab.vue";
 import useEnvSanStore from "@/store/modules/envSan.js";
@@ -192,7 +192,7 @@ watch(
     const activeLabel = calculateActiveTabLabel();
 
     currentlyActiveTabLabel.value = activeLabel;
-
+    //不确定后端什么时候返回数据
     updateDataTimer = setInterval(() => {
       const relevantLayerNames = tabToLayerMapping[activeLabel];
       // 查询应该展示的点位数据

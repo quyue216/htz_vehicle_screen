@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .videoArea {
     position: relative;
     width: 100%;

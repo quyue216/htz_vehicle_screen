@@ -1,8 +1,18 @@
 <template>
   <div class="envSan-screen">
-    <MapView @onloadMapLayer="handleLoadMapLayer" ref="mapViewRef"></MapView>
+    <MapView
+      @onloadMapLayer="handleLoadMapLayer"
+      ref="mapViewRef"
+      @fetchCarVideoUrl="fetchCarVideoUrl"
+    ></MapView>
     <!-- 车辆点位渲染title控制显示与否 -->
     <VehiclePointerTitleController></VehiclePointerTitleController>
+
+    <!-- 监控弹框 -->
+    <PVMonitor
+      :videoUrlList="videoUrlList"
+      v-model:visible="envSanStore.monitorDialogVisible"
+    ></PVMonitor>
     <!-- 定位查询 -->
     <mapPointSearch
       :allLayerData="layers"
@@ -20,22 +30,37 @@ import useEnvSanStore from "@/store/modules/envSan.js";
 import BottomNavigation from "./BottomNavigation/BottomNavigation.vue";
 import VehiclePointerTitleController from "./mapView/VehiclePointerTitleController/VehiclePointerTitleController.vue";
 import mapPointSearch from "./mapView/components/mapPointSearch/index.vue";
+import PVMonitor from "./mapView/components/PVMonitor/index.vue";
+import { getCarVideoUrl } from "@/api/envSan/map.js";
 // 创建环卫仓库
 const envSanStore = useEnvSanStore();
 
 const layers = ref([]);
 
 const mapViewRef = ref(null);
-
 // 初始化完图层数据
 const handleLoadMapLayer = (layersData) => {
   layers.value = layersData;
 };
 // 设置地图中心点
 const setMapCenter = (pointerInfo) => {
-  const { jd, wd ,...rest} = pointerInfo;
+  const { jd, wd, ...rest } = pointerInfo;
   // 设置经纬度
-  mapViewRef.value.setMapCenter([jd, wd],rest);
+  mapViewRef.value.setMapCenter([jd, wd], rest);
+};
+
+// cars
+const carVideoUrls = ref([]);
+// 监控弹框
+const fetchCarVideoUrl = async (carId) => {
+  const res = await getCarVideoUrl(carId);
+
+  if (res.code === 200) {
+    envSanStore.openMonitorDialog();
+    carVideoUrls.value = res.data;
+  } else {
+    envSanStore.closeMonitorDialog();
+  }
 };
 </script>
 
