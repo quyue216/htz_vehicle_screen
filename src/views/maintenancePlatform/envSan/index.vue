@@ -7,7 +7,7 @@
       @fetchCarVideoUrl="fetchCarVideoUrl"
     ></MapView>
     <!-- 车辆点位渲染title控制显示与否 -->
-    <VehiclePointerTitleController></VehiclePointerTitleController>
+    <VehiclePointerTitleController/>
 
     <!-- 监控弹框 -->
     <PVMonitor
