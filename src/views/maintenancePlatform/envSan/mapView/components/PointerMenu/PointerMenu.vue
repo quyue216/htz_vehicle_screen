@@ -64,6 +64,7 @@ const handInfo = () => {
 
 const handPath = () => {
   typeActive.value = 'carPath'; // 点击时更新 typeActive 的值
+  envSanStore.openVehiclePathShow();
 };
 
 const handVideo = () => {

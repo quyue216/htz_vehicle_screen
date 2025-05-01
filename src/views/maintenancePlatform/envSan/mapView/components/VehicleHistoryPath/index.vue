@@ -1,93 +1,107 @@
 <template>
-  <div
-    id="gjdialogs"
-    v-loading="getDataloading"
-    element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(8, 30, 56, 0.8)"
+  <transition
+    enter-active-class="animate__animated animate__backInDown"
+    leave-active-class="animate__animated animate__backOutUp"
   >
-    <div class="gjTitle">
-      <span>车辆轨迹</span>
-      <span>
-        <i class="icon" @click="clearCarPath"></i>
-      </span>
-    </div>
-    <div class="gjdialog">
-      <el-input v-model="plate" placeholder="请输入车牌" disabled>
-        <i slot="prefix" class="el-input__icon el-icon-location-outline"></i>
-      </el-input>
-      <el-date-picker
-        style="margin-top: 5px; width: 100%"
-        v-model="startDate"
-        type="datetime"
-        value-format="yyyy-MM-dd HH:mm:ss"
-        :editable="false"
-        :clearable="false"
-        placeholder="选择起点日期时间"
-      ></el-date-picker>
-      <el-date-picker
-        style="margin-top: 5px; width: 100%"
-        v-model="endDate"
-        type="datetime"
-        :editable="false"
-        :clearable="false"
-        value-format="yyyy-MM-dd HH:mm:ss"
-        placeholder="选择止点日期时间"
-      ></el-date-picker>
+    <div
+      id="gjdialogs"
+      v-loading="getDataloading"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(8, 30, 56, 0.8)"
+      v-if="envSanStore.vehiclePathShow"
+    >
+      <div class="gjTitle">
+        <span>车辆轨迹</span>
+        <span>
+          <i class="icon" @click="clearCarPath"></i>
+        </span>
+      </div>
+      <div class="gjdialog">
+        <el-input v-model="plate" placeholder="请输入车牌" disabled>
+          <template #prefix>
+            <el-icon><Location /></el-icon>
+          </template>
+        </el-input>
+        <el-date-picker
+          style="margin-top: 5px; width: 100%"
+          v-model="startDate"
+          type="datetime"
+          class="datePicker"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          :editable="false"
+          :clearable="false"
+          placeholder="选择起点日期时间"
+        ></el-date-picker>
+        <el-date-picker
+          style="margin-top: 5px; width: 100%"
+          v-model="endDate"
+          type="datetime"
+          class="datePicker"
+          :editable="false"
+          :clearable="false"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          placeholder="选择止点日期时间"
+        ></el-date-picker>
 
-      <el-button
-        class="pathBut"
-        :class="{ active: isPath }"
-        @click="getCarPath()"
-        >作业轨迹</el-button
-      >
-      <div class="asideDiv">
-        <div style="display: flex; justify-content: space-between; width: 100%">
-          <el-button class="rangeBut" @click="decreaseRange()">
-            <i class="el-icon-arrow-left"></i>
-          </el-button>
-          <div class="rangeText">
-            <p>{{ speed }} X</p>
-            <input
-              type="range"
-              :step="0.5"
-              :min="0.5"
-              :max="5"
-              v-model="speed"
-              @change="speedChange"
-              class="range"
-            />
+        <el-button
+          class="pathBut"
+          :class="{ active: isPath }"
+          @click="getCarPath()"
+          >作业轨迹</el-button
+        >
+        <div class="asideDiv">
+          <div
+            style="display: flex; justify-content: space-between; width: 100%"
+          >
+            <el-button class="rangeBut" @click="decreaseRange()">
+              <el-icon><ArrowLeft /></el-icon>
+            </el-button>
+            <div class="rangeText">
+              <p>{{ speed }} X</p>
+              <input
+                type="range"
+                :step="0.5"
+                :min="0.5"
+                :max="5"
+                v-model="speed"
+                @change="speedChange"
+                class="range"
+              />
+            </div>
+            <el-button class="rangeBut" @click="increaseRange()">
+              <el-icon><ArrowRight /></el-icon>
+            </el-button>
           </div>
-          <el-button class="rangeBut" @click="increaseRange()">
-            <i class="el-icon-arrow-right"></i>
-          </el-button>
+        </div>
+
+        <div
+          style="display: flex; justify-content: space-around; margin-top: 8px"
+        >
+          <el-button class="tree-button" @click="startCarPath()"
+            >作业回放</el-button
+          >
+          <el-button class="tree-button" @click="pauseCarPath()"
+            >暂停</el-button
+          >
+          <el-button class="tree-button" @click="resumeCarPath()"
+            >继续</el-button
+          >
+          <el-button class="tree-button" @click="stopCarPath()">结束</el-button>
+          <el-button class="tree-button" @click="closeCarPath()"
+            >清除</el-button
+          >
         </div>
       </div>
-
-      <div
-        style="display: flex; justify-content: space-around; margin-top: 8px"
-      >
-        <el-button class="tree-button" @click="startCarPath()"
-          >作业回放</el-button
-        >
-        <el-button class="tree-button" @click="pauseCarPath()">暂停</el-button>
-        <el-button class="tree-button" @click="resumeCarPath()">继续</el-button>
-        <el-button class="tree-button" @click="stopCarPath()">结束</el-button>
-        <el-button class="tree-button" @click="closeCarPath()">清除</el-button>
-      </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup>
 import modal from "@/plugins/modal.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
-import { dayjs } from 'element-plus'
+import { dayjs } from "element-plus";
 // 定义 props
 const props = defineProps({
-  plate: {
-    type: String,
-    required: true,
-  },
   startDateTime: {
     type: String,
     default: "",
@@ -100,6 +114,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+});
+
+const plate = defineModel("plate", {
+  type: String,
+  required: true,
 });
 
 // 定义 emits
@@ -115,12 +134,10 @@ const emit = defineEmits([
 ]);
 
 const envSanStore = useEnvSanStore();
-// const store = useStore();
-const $moment = store.$moment;
 
 // 获取今天的 0 点到现在
-const CurTime = dayjs().format('YYYY-MM-DD HH:mm:ss');;
-const startTime = dayjs().startOf('day').format('YYYY-MM-DD HH:mm:ss');
+const CurTime = dayjs().format("yyyy-MM-dd HH:mm:ss");
+const startTime = dayjs().startOf("day").format("yyyy-MM-dd HH:mm:ss");
 // 定义响应式数据
 const startDate = ref(props.startDateTime || startTime);
 const endDate = ref(props.endDateTime || CurTime);
@@ -129,15 +146,15 @@ const getDataloading = ref(false);
 
 // 关闭轨迹弹窗
 const clearCarPath = () => {
-  envSanStore.openVehiclePathShow();
+  envSanStore.closeVehiclePathShow();
   emit("clearCarPath");
 };
 
 // 获取车辆轨迹
 const getCarPath = () => {
   // 判断是不是一天的数据
-  const startDateFormatted = dayjs(startDate.value).format('YYYY-MM-DD');
-  const endDateFormatted = dayjs(endDate.value).format('YYYY-MM-DD');
+  const startDateFormatted = dayjs(startDate.value).format("YYYY-MM-DD");
+  const endDateFormatted = dayjs(endDate.value).format("YYYY-MM-DD");
   if (startDateFormatted !== endDateFormatted) {
     modal.msgWarning("查询时间段不在同一天，请重新选择时间");
     return;
@@ -209,27 +226,31 @@ const closeCarPath = () => {
 
 <style lang="scss" scoped>
 #gjdialogs {
-  width: 450px;
-  height: 550px;
+  // 450px * 0.7 = 315px
+  width: 315px;
+  // 550px * 0.7 = 385px
+  height: 385px;
   overflow: hidden;
   color: #000;
   background: url("@/assets/images/visualCockpit/map/big_pop.png") no-repeat;
   background-size: 100% 100%;
   position: absolute;
-  top: 0;
-  left: 62%;
-  padding: 10px 15px;
+  top: 100px;
+  right: 4%;
+  // 10px * 0.7 = 7px，15px * 0.7 = 10.5px
+  padding: 7px 10.5px;
   font-size: 15px;
   border-radius: 10px;
-  @include scaleMap;
   /* border: 1px solid red; */
   /* transform-origin: center bottom;
     transform: scale(0.5); */
+
 }
 
 #gjdialogs .gjTitle {
   width: 100%;
-  height: 45px;
+  // 45px * 0.7 = 31.5px
+  height: 31.5px;
   font-size: 25px;
   font-family: YouSheBiaoTiHei;
   font-weight: 400;
@@ -237,14 +258,18 @@ const closeCarPath = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-left: 10px;
-  margin-bottom: 10px;
+  // 10px * 0.7 = 7px
+  padding-left: 7px;
+  // 10px * 0.7 = 7px
+  margin-bottom: 7px;
   /* border: 1px solid red; */
 }
 
 .gjTitle .icon {
-  width: 30px;
-  height: 30px;
+  // 30px * 0.7 = 21px
+  width: 21px;
+  // 30px * 0.7 = 21px
+  height: 21px;
   display: block;
   background: url("@/assets/images/visualCockpit/map/clear_icon.png") no-repeat;
   background-size: 100% 100%;
@@ -254,17 +279,21 @@ const closeCarPath = () => {
 #gjdialogs .gjdialog {
   width: 100%;
   height: 90%;
-  padding-bottom: 10px;
+  // 10px * 0.7 = 7px
+  padding-bottom: 7px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
 }
 
 .gjdialog .pathBut {
-  width: 120px;
-  height: 55px;
-  font-size: 18px;
-  padding-left: 15px;
+  // 120px * 0.7 = 84px
+  width: 84px;
+  // 55px * 0.7 = 38.5px
+  height: 38.5px;
+  font-size: 13px;
+  text-align: center;
+  // 15px * 0.7 = 10.5px
   letter-spacing: 3px;
   font-family: Source Han Sans CN;
   color: #ffffff;
@@ -276,16 +305,39 @@ const closeCarPath = () => {
   background-color: #3092c7;
   /* border: 1px solid #073360; */
 }
+::v-deep .el-input__wrapper{
+    background-color: #073360;
+    border: none;
+    box-shadow: none;
+  }
 
-.gjdialog .el-input {
   ::v-deep .el-input__inner {
     color: #ffffff;
     background-color: #073360;
-    border: 1px solid #16628c;
-    height: 50px;
-    padding: 10px 15px;
-    padding-left: 30px;
+    font-size: 14px;
+  }
+ .el-input,.datePicker {
+  ::v-deep .el-input__wrapper{
+    background-color: #073360;
+    border: none;
+    color: #ffffff;
+    box-shadow: none;
+  }
+  ::v-deep .el-input__inner {
+    color: #ffffff;
+    background-color: #073360;
+    // border: 1px solid #16628c;
+    // 50px * 0.7 = 35px
+    height: 35px;
+    // 10px * 0.7 = 7px，15px * 0.7 = 10.5px
+    padding: 7px 10.5px;
+    // 30px * 0.7 = 21px
+    padding-left: 21px;
     font-size: 20px;
+  }
+  ::v-deep .el-input__inner::placeholder {
+    // 设置 placeholder 文字大小为 14px
+    font-size: 18px;
   }
 }
 
@@ -293,8 +345,10 @@ const closeCarPath = () => {
   color: #ffffff;
   background-color: #073360;
   border: 1px solid #16628c;
-  width: 102px;
-  height: 50px;
+  // 102px * 0.7 = 71.4px
+  width: 71.4px;
+  // 50px * 0.7 = 35px
+  height: 35px;
   font-size: 28px;
   display: flex;
   justify-content: center;
@@ -314,12 +368,15 @@ const closeCarPath = () => {
   text-align: center;
 }
 .asideDiv .range {
-  width: 150px;
+  // 150px * 0.7 = 105px
+  width: 105px;
 }
 
 .tree-button {
   font-size: 15px;
-  padding: 10px 15px;
+  // 10px * 0.7 = 7px，15px * 0.7 = 10.5px
+  padding: 4px 6px;
+  flex-shrink: 1;
   color: #ffffff;
   background-color: #073360;
   border: 1px solid #16628c;
