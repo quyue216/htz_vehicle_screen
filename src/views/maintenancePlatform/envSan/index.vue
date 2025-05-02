@@ -3,17 +3,10 @@
     <MapView
       @onloadMapLayer="handleLoadMapLayer"
       ref="mapViewRef"
-      v-model:showPointerInfo="showPointerInfo"
-      @fetchCarVideoUrl="fetchCarVideoUrl"
     ></MapView>
     <!-- 车辆点位渲染title控制显示与否 -->
     <VehiclePointerTitleController/>
 
-    <!-- 监控弹框 -->
-    <PVMonitor
-      :videoUrlList="carVideoUrls"
-      v-model:visible="envSanStore.monitorDialogVisible"
-    ></PVMonitor>
     <!-- 定位查询 -->
     <mapPointSearch
       :allLayerData="layers"
@@ -32,9 +25,7 @@ import BottomNavigation from "./BottomNavigation/BottomNavigation.vue";
 import VehiclePointerTitleController from "./mapView/VehiclePointerTitleController/VehiclePointerTitleController.vue";
 import mapPointSearch from "./mapView/components/mapPointSearch/index.vue";
 import PVMonitor from "./mapView/components/PVMonitor/index.vue";
-import { getCarVideoUrl } from "@/api/envSan/map.js";
-// 创建环卫仓库
-const envSanStore = useEnvSanStore();
+
 
 const layers = ref([]);
 
@@ -49,32 +40,6 @@ const setMapCenter = (pointerInfo) => {
   // 设置经纬度
   mapViewRef.value.setMapCenter([jd, wd], rest);
 };
-
-// cars
-const carVideoUrls = ref([]);
-
-const showPointerInfo = ref({});
-// 监控弹框
-const fetchCarVideoUrl = async (carId) => {
-  //HACK 其实也可以通过类去获取id,所以需要编写函数，获取当前显示图层打开点位的Id
-  const res = await getCarVideoUrl(carId);
-
-  if (res.code === 200) {
-    // 获取到数据
-    carVideoUrls.value = res.data;
-  } 
-};
-
-watch(()=>envSanStore.monitorDialogVisible,(newVal,oldVal)=>{
-  
-  if(newVal && !oldVal){
-    // 打开
-    const id = showPointerInfo.value.id;
-    // console.log(showPointerInfo.value);
-    fetchCarVideoUrl({cphm: id});
-  }
-
-})
 </script>
 
 <style scoped lang="scss">

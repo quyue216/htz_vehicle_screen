@@ -1,10 +1,17 @@
 <template>
   <div class="map-wrap">
     <div id="gisMap"></div>
+    <VehicleHistoryPath v-model:plate="carNumber"/>
+    <PVMonitor
+      :videoUrlList="carVideoUrls"
+      v-model:visible="envSanStore.monitorDialogVisible"
+    ></PVMonitor>
   </div>
 </template>
 
 <script setup>
+//HACK  地图组件放这,更方便通讯 代码太多如何进行拆分
+import VehicleHistoryPath from "./components/VehicleHistoryPath/index.vue";
 import GdMapUtils from "@/utils/gdMap/gdMapUtils.js";
 import MarkerLayerRender from "@/utils/gdMap/MarkerPointer.js";
 import LabelMarkerPointer from "@/utils/gdMap/LabelMarkerPointer.js";
@@ -18,6 +25,7 @@ import {
   getReduceVolSites,
   getMdzdList,
   getTransferPointInfo,
+  getCarVideoUrl
 } from "@/api/envSan/map.js";
 import {
   getCarInfo,
@@ -29,6 +37,7 @@ import getComponentDom from "@/utils/getComponentDom.js";
 import "./sydwPointer.js";
 import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
 import BasicInfoDialog from "./components/BasicInfoDialog/BasicInfoDialog.vue";
+import PVMonitor from "./components/PVMonitor/index.vue";
 // 初始化地图显示
 const envSanStore = useEnvSanStore();
 // 初始化高德地图工具
@@ -52,12 +61,14 @@ const gdMapUtils = new GdMapUtils({
   },
 });
 
-const showPointerInfo = defineModel("showPointerInfo", {
-  default: ()=>{
-    return {};
-  },
-  type: Object,
-}); //显示点位信息
+// const showPointerInfo = defineModel("showPointerInfo", {
+//   default: ()=>{
+//     return {};
+//   },
+//   type: Object,
+// }); //显示点位信息
+
+const carNumber = ref("");
 
 const {
   zzVehicle,
@@ -582,9 +593,9 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
 
   const { windowConfig } = config;  
   //抛到外面可能使用 
-  showPointerInfo.value = {
-    ...marker.getExtData(),
-  }; //保存当前点击的点位信息
+  // showPointerInfo.value = {
+  //   ...marker.getExtData(),
+  // }; //保存当前点击的点位信息
 
   //将.vue转化为DOM
   const dom = getComponentDom(PointerMenu, {pointerInfo: marker.getExtData()});
@@ -723,6 +734,30 @@ const setMapCenter = (lngLat, pointerInfo) => {
   // 设置地图中心点
   gdMapUtils.setCenter(lngLat, 20);
 };
+
+// cars
+const carVideoUrls = ref([]);
+
+// 监控弹框
+const fetchCarVideoUrl = async (carId) => {
+  //HACK 其实也可以通过类去获取id,所以需要编写函数，获取当前显示图层打开点位的Id
+  const res = await getCarVideoUrl(carId);
+
+  if (res.code === 200) {
+    // 获取到数据
+    carVideoUrls.value = res.data;
+  } 
+};
+
+watch(()=>envSanStore.monitorDialogVisible,(newVal,oldVal)=>{
+  
+  if(newVal && !oldVal){
+    // 打开
+    const id = pointerBasicInfo.extData.id;
+    console.log(pointerBasicInfo);
+    fetchCarVideoUrl({cphm: id});
+  }
+})
 
 defineExpose({
   setMapCenter,
