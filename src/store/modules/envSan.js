@@ -6,6 +6,7 @@ const useEnvSanStore = defineStore('envSan', () => {
   const basicPointerShow = ref(false); // 控制基本信息弹框是否展示
   const monitorDialogVisible = ref(false); // 控制监控弹框是否展示
   const vehiclePathShow = ref(false); // 控制车辆路径是否展示
+  const searchContentVisible = ref(false); // 控制搜索框是否展示
 
   // 定义 actions
   const setMapActiveType = (type) => {
@@ -16,6 +17,7 @@ const useEnvSanStore = defineStore('envSan', () => {
     basicPointerShow.value = true;
     closeMonitorDialog(); // 关闭监控弹框
     closeVehiclePathShow(); // 关闭车辆路径
+    closeSearchContentVisible(); // 关闭搜索框
   };
 
   const closeBasicPointerShow = () => {
@@ -26,6 +28,7 @@ const useEnvSanStore = defineStore('envSan', () => {
     monitorDialogVisible.value = true;
     closeBasicPointerShow(); // 关闭基本信息弹框
     closeVehiclePathShow(); // 关闭车辆路径
+    closeSearchContentVisible(); // 关闭搜索框
   };
 
   const closeMonitorDialog = () => {
@@ -36,6 +39,7 @@ const useEnvSanStore = defineStore('envSan', () => {
     vehiclePathShow.value = true;
     closeBasicPointerShow(); // 关闭基本信息弹框
     closeMonitorDialog(); // 关闭监控弹框
+    closeSearchContentVisible(); //关闭搜索弹框展示    
   };
 
   const closeVehiclePathShow = () => {
@@ -48,12 +52,25 @@ const useEnvSanStore = defineStore('envSan', () => {
     return types.includes(mapActiveType.value);
   });
 
+  const closeSearchContentVisible = () => {
+    searchContentVisible.value = false; 
+  }
+
+  const openSearchContentVisible = () => {
+    searchContentVisible.value = true; 
+    closeMonitorDialog();
+    closeBasicPointerShow();
+    closeVehiclePathShow(); 
+  }
+
   // 返回状态、actions 和 getters
   return {
     mapActiveType,
     basicPointerShow,
     monitorDialogVisible,
     vehiclePathShow,
+    carPointerShow,
+    searchContentVisible,
     setMapActiveType,
     openBasicPointerShow,
     closeBasicPointerShow,
@@ -61,7 +78,8 @@ const useEnvSanStore = defineStore('envSan', () => {
     closeMonitorDialog,
     openVehiclePathShow,
     closeVehiclePathShow,
-    carPointerShow
+    closeSearchContentVisible,
+    openSearchContentVisible
   };
 });
 

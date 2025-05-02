@@ -5,7 +5,7 @@
       enter-active-class="animate__animated animate__backInDown"
       leave-active-class="animate__animated animate__backOutUp"
     >
-      <div id="mapPointSearch" v-show="isSearchContentVisible">
+      <div id="mapPointSearch" v-show="envSanStore.searchContentVisible">
         <div class="mapPointSearch-gjTitle">
           <span>点位搜索</span>
           <span>
@@ -55,7 +55,6 @@ import useEnvSanStore from "@/store/modules/envSan.js";
 // 创建核心仓库
 const envSanStore = useEnvSanStore();
 // 定义响应式数据
-const isSearchContentVisible = ref(false); // 控制搜索内容的显示
 const searchInputValue = ref(""); // 搜索框的值
 
 const dropdownOptionList = ref([]);
@@ -149,11 +148,15 @@ const calculateActiveTabLabel = () => {
 };
 // 方法
 const toggleSearchContentVisibility = () => {
-  isSearchContentVisible.value = !isSearchContentVisible.value; // 切换搜索内容的显示状态
+ if(envSanStore.searchContentVisible){
+   envSanStore.closeSearchContentVisible();
+ }else{
+   envSanStore.openSearchContentVisible();
+ }
 };
 
 const closeSearchContent = () => {
-  isSearchContentVisible.value = false; // 关闭搜索内容
+  envSanStore.closeSearchContentVisible();
 };
 // 点击切换select下拉框数据
 const handleTabClick = (tabLabel) => {
