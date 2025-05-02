@@ -23,10 +23,10 @@ export const pointerConfig = {
     className: 'transferStation',
     size,
     windowConfig: {
-      offset:[0,-110],
+      offset: [0, -110],
     },
     name: 'zz', // 中转站
-    InfoLabels:{
+    InfoLabels: {
       zzxm: "站长姓名",
       zzdh: "站长电话",
       zm: "所在站名",
@@ -41,7 +41,7 @@ export const pointerConfig = {
     className: 'endStation',
     size,
     windowConfig: {
-      offset:[0,-110],
+      offset: [0, -110],
     },
     name: 'zz'
   },
@@ -51,7 +51,7 @@ export const pointerConfig = {
     className: 'compressStation',
     size,
     windowConfig: {
-      offset:[0,-110],
+      offset: [0, -110],
     },
     name: 'ys',
     InfoLabels: {
@@ -70,10 +70,10 @@ export const pointerConfig = {
     className: 'publicToilets',
     size,
     windowConfig: {
-      offset:[0,-110],
+      offset: [0, -110],
     },
     name: 'gc',
-    InfoLabels:{
+    InfoLabels: {
       bh: "编号",
       sc: "俗称",
       dz: "地址",
@@ -104,7 +104,7 @@ export const pointerConfig = {
       moveIcon: moveIcon,
       moveSize: [60, 60],
     },
-    InfoLabels :{
+    InfoLabels: {
       clbh: "车辆编号",
       cqdw: "产权单位",
       deptId: "使用单位",
@@ -116,7 +116,7 @@ export const pointerConfig = {
   },
   qyCollectionPoint: {
     icon: sydwIcon,
-    name:'qy',
+    name: 'qy',
     iconActive: sydwActiveIcon,
     className: 'qyCollectionPoint',
     size: [30, 30],
@@ -133,7 +133,7 @@ export const pointerConfig = {
     activeIcon: activeIcon,
     className: 'qyVehicle',
     size,
-    name:'qy',
+    name: 'qy',
     windowConfig: {
       offset,
     },
@@ -148,7 +148,7 @@ export const pointerConfig = {
       moveIcon: moveIcon,
       moveSize: [60, 60],
     },
-    InfoLabels :{
+    InfoLabels: {
       clbh: "车辆编号",
       cqdw: "产权单位",
       deptId: "使用单位",
@@ -163,23 +163,23 @@ export const pointerConfig = {
     size, // 1/1.5  公司图标的大小
     className: 'compony',
     windowConfig: {
-      offset:[0,-110],
+      offset: [0, -110],
     },
-    name:"home",
-    InfoLabels : {
+    name: "home",
+    InfoLabels: {
       name: "名称",
       address: "地址",
       peopleNumer: "人员总数",
       carNumer: "车辆总数"
     },
-    subsidiaryList:[
+    subsidiaryList: [
       {
         id: 101,
         label: '上海浦发环境服务有限公司', //ph
         lx: 'gs',
         lon: 121.575437,
         lat: 31.195609,
-  
+
         jd: 121.575437,
         wd: 31.195609,
         name: '上海浦发环境服务有限公司',
@@ -190,7 +190,7 @@ export const pointerConfig = {
         lon: 121.70107924152443,
         lx: 'gs',
         lat: 31.187839534137574,
-  
+
         jd: 121.70107924152443,
         wd: 31.187839534137574,
         name: '上海浦东东道园综合养护有限公司',
@@ -201,7 +201,7 @@ export const pointerConfig = {
         lon: 121.64904748013274,
         lx: 'gs',
         lat: 31.033283580880607,
-  
+
         jd: 121.64904748013274,
         wd: 31.033283580880607,
         name: '上海浦养环境服务有限公司',
