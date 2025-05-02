@@ -581,6 +581,7 @@ onUnmounted(() => {
   layerList.forEach((item) => {
     if (vehicleLayers.includes(item.config.name)) {
       item.stopDetectingPositionChange();
+      item.destroy(); //移除事件
     }
   });
 });
@@ -735,7 +736,9 @@ const setMapCenter = (lngLat, pointerInfo) => {
   gdMapUtils.setCenter(lngLat, 20);
 };
 
-// cars
+
+
+//!------------------ 车辆监控弹窗逻辑
 const carVideoUrls = ref([]);
 
 // 监控弹框

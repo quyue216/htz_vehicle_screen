@@ -15,7 +15,7 @@ export default class MarkerLayerRender {
 
   envSanStore = useEnvSanStore(); //!要不要改为参数传递进来 不用把反正是针对当前业务场景
 
-  activeNames = []; 
+  activeNames = [];
   /**
   * 经纬度坐标，用来描述地图上的一个点位置
   * @param {Object} config 图层的config
@@ -38,13 +38,31 @@ export default class MarkerLayerRender {
 
     this.detectingPosition = detectingPosition; // 是否检测位置变化
 
-    this.activeNames = [...(this?.config?.extraActiveName ?? []),this.config.name];
+    this.activeNames = [...(this?.config?.extraActiveName ?? []), this.config.name];
+
+    // 添加页面可见性变化监听
+    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
   }
 
   // 获取地图工具类实例
   getGdMapUtilsIns(id = "gisMap") {
     return GdMapUtils.mapInstance.get(id);
   }
+
+  // 处理页面可见性变化
+  handleVisibilityChange() {
+    const gdMapUtils = this.getGdMapUtilsIns();
+    if (document.hidden) {
+      // 页面隐藏时停止检测
+      this.stopDetectingPositionChange();
+    } else {
+      // 页面显示时启动检测
+      if (this.detectingPosition && this.layerInstance) {
+        this.startDetectingPositionChange(gdMapUtils);
+      }
+    }
+  }
+
 
   // 创建图层
   async createLayer(gdMapUtils) {
@@ -65,12 +83,12 @@ export default class MarkerLayerRender {
     //! 不需要响应click的marker如何处理
     gdMapUtils.bindEventMarker(this.config.className, 'click', (e) => {
       const marker = e.target;
-      
+
       if (marker.getExtData().type === this.config.className) {
         this.layerInstance.resetActiveMarker();  // 重置激活的标记
         this.layerInstance.setActiveMarker(marker); // 设置激活的标记
-        marker.setzIndex(1001) 
-        gdMapUtils.trigger('pointerClick', marker,e,gdMapUtils.map,this.config);
+        marker.setzIndex(1001)
+        gdMapUtils.trigger('pointerClick', marker, e, gdMapUtils.map, this.config);
       }
     });
 
@@ -97,12 +115,12 @@ export default class MarkerLayerRender {
   // 手动触发高亮某个点位
   highlightMarker(id) {
     const layerInstance = this.layerInstance;
-    
+
     if (!layerInstance) return; // 如果图层不存在，则不执行后续操作
 
     const marker = layerInstance.findLayerMarker(id);
 
-    if(marker){
+    if (marker) {
       layerInstance.resetActiveMarker();  // 重置激活的标记
       layerInstance.setActiveMarker(marker); // 设置激活的标记
       marker.setzIndex(1001) // 设置zIndex
@@ -138,23 +156,23 @@ export default class MarkerLayerRender {
 
     changedData.forEach((item) => {
       const marker = this.layerInstance.findLayerMarker(item.id);
-    
+
       const iconImage = item.extData.onLine ? this.config.onLineIcon : this.config.icon;
       // 激活图标不需要更新位置和图标
-      const  activesMarkerIds = this.layerInstance.activesMarkerIds; // 获取激活的markerId
-      
+      const activesMarkerIds = this.layerInstance.activesMarkerIds; // 获取激活的markerId
+
       if (!activesMarkerIds.includes(item.id)) {
         if (marker) { //存在的marker需要更新位置和图标
-        
-          marker.setPosition(getGdMapUtilsIns.LngLat(item.jd, item.wd)); 
-  
+
+          marker.setPosition(getGdMapUtilsIns.LngLat(item.jd, item.wd));
+
           const icon = getGdMapUtilsIns.createIcon(this.config.size, iconImage, this.config.size);
-  
+
           marker.setIcon(icon)
-  
-        }else{ //没有的marker需要重新创建
+
+        } else { //没有的marker需要重新创建
           this.createOverlay(getGdMapUtilsIns, iconImage, item)
-        } 
+        }
       }
     });
 
@@ -174,7 +192,7 @@ export default class MarkerLayerRender {
     const gdMapUtils = this.getGdMapUtilsIns(); // 获取地图实例
 
     if (!gdMapUtils) return; // 如果地图实例不存在，则不执行后续操作
-   
+
     if (this.shouldSkipLayerCreation()) {
 
       if (this.isLayerCreated) {
@@ -182,12 +200,12 @@ export default class MarkerLayerRender {
       } else {
         this.createLayer(gdMapUtils); // 创建图层
       }
-      
+
     } else {
       this.hideLayer(); // 隐藏图层
     }
 
-    
+
     // 离开中转页时，停止检测车辆经纬度变化
     if (this.shouldSkipLayerCreation(oldVal) && !this.shouldSkipLayerCreation(newVal)) {
       this.stopDetectingPositionChange();
@@ -199,6 +217,10 @@ export default class MarkerLayerRender {
     }
   }
 
+  // 销毁实例时移除事件监听
+  destroy() {
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+  }
   get dataOfLayer() {
     return this.dataList;
   }
