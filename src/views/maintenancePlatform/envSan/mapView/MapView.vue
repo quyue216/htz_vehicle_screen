@@ -1,11 +1,18 @@
 <template>
   <div class="map-wrap">
     <div id="gisMap"></div>
+    <!-- 车辆历史轨迹 -->
     <VehicleHistoryPath v-model:plate="carNumber"/>
+    <!-- 车辆监控 -->
     <PVMonitor
       :videoUrlList="carVideoUrls"
       v-model:visible="envSanStore.monitorDialogVisible"
     ></PVMonitor>
+    <!-- 点位检索 -->
+    <MapPointSearch
+      :allLayerData="layerList"
+      @onMapCenter="setMapCenter"
+    ></MapPointSearch>
   </div>
 </template>
 
@@ -38,6 +45,7 @@ import "./sydwPointer.js";
 import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
 import BasicInfoDialog from "./components/BasicInfoDialog/BasicInfoDialog.vue";
 import PVMonitor from "./components/PVMonitor/index.vue";
+import MapPointSearch from "./components/MapPointSearch/index.vue";
 // 初始化地图显示
 const envSanStore = useEnvSanStore();
 // 初始化高德地图工具
@@ -61,12 +69,7 @@ const gdMapUtils = new GdMapUtils({
   },
 });
 
-// const showPointerInfo = defineModel("showPointerInfo", {
-//   default: ()=>{
-//     return {};
-//   },
-//   type: Object,
-// }); //显示点位信息
+
 
 const carNumber = ref("");
 
@@ -82,11 +85,9 @@ const {
 
 let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框打开, {}弹框打开
 
-let layerList = null; //存储图层集合
+let layerList = ref([]); //存储图层集合
 
-const emit = defineEmits(
-  ["onloadMapLayer"] //图层对象创建完毕,调用此函数
-);
+
 // 初始化公厕图层
 const initToiletLayer = () => {
   const toiletLayer = new LabelMarkerPointer({
@@ -556,18 +557,18 @@ onMounted(async () => {
   });
 
   // 初始化所有图层
-  layerList = layerConfigs.map(({ name, initFn }) => {
+  layerList.value = layerConfigs.map(({ name, initFn }) => {
     const layer = initFn();
     return layer;
   });
 
-  emit("onloadMapLayer", layerList);
   // 监听所有图层的 mapActiveType 变化
   watch(
     () => envSanStore.mapActiveType,
     (...p) => {
       gdMapUtils.clearInfoWindow(); // 切换地图类型时清除所有infoWindow
-      layerList.forEach((layer) => layer.handleMapTypeChange(...p));
+      layerList.value.forEach((layer) => layer.handleMapTypeChange(...p));
+      // 改为代理后导致#属性访问失效
     },
     {
       immediate: true,
@@ -578,7 +579,7 @@ onMounted(async () => {
 onUnmounted(() => {
   // 停止所有车辆图层
   const vehicleLayers = [zzVehicle.className, qyVehicle.className];
-  layerList.forEach((item) => {
+  layerList.value.forEach((item) => {
     if (vehicleLayers.includes(item.config.name)) {
       item.stopDetectingPositionChange();
       item.destroy(); //移除事件
@@ -593,10 +594,6 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   envSanStore.closeBasicPointerShow();
 
   const { windowConfig } = config;  
-  //抛到外面可能使用 
-  // showPointerInfo.value = {
-  //   ...marker.getExtData(),
-  // }; //保存当前点击的点位信息
 
   //将.vue转化为DOM
   const dom = getComponentDom(PointerMenu, {pointerInfo: marker.getExtData()});
@@ -721,20 +718,7 @@ async function fetchMarkerData(type, params, InfoLabels) {
     return [];
   }
 }
-// 设置地图中心点
-const setMapCenter = (lngLat, pointerInfo) => {
-  if (pointerInfo.className) {
-    // 车辆点位才具备此属性
-    // console.log('pointerInfo',pointerInfo);
-    const layer = layerList.find(
-      (item) => item.config.className === pointerInfo.className
-    );
-    // 高亮对应点位
-    layer.highlightMarker(pointerInfo.id);
-  }
-  // 设置地图中心点
-  gdMapUtils.setCenter(lngLat, 20);
-};
+
 
 
 
@@ -762,9 +746,23 @@ watch(()=>envSanStore.monitorDialogVisible,(newVal,oldVal)=>{
   }
 })
 
-defineExpose({
-  setMapCenter,
-});
+//!------------搜索点位弹框 
+// 设置地图中心点
+const setMapCenter = (pointerInfo) => {
+  const { jd, wd} = pointerInfo;
+
+  if (pointerInfo.className) {
+    // 车辆点位才具备此属性
+    // console.log('pointerInfo',pointerInfo);
+    const layer = layerList.value.find(
+      (item) => item.config.className === pointerInfo.className
+    );
+    // 高亮对应点位
+    layer.highlightMarker(pointerInfo.id);
+  }
+  // 设置地图中心点
+  gdMapUtils.setCenter([jd,wd], 20);
+};
 </script>
 
 <style scoped lang="scss">

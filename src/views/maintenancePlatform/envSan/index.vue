@@ -1,17 +1,10 @@
 <template>
   <div class="envSan-screen">
     <MapView
-      @onloadMapLayer="handleLoadMapLayer"
-      ref="mapViewRef"
     ></MapView>
     <!-- 车辆点位渲染title控制显示与否 -->
     <VehiclePointerTitleController/>
 
-    <!-- 定位查询 -->
-    <mapPointSearch
-      :allLayerData="layers"
-      @onMapCenter="setMapCenter"
-    ></mapPointSearch>
     <footer class="footer-types">
       <BottomNavigation></BottomNavigation>
     </footer>
@@ -20,26 +13,8 @@
 
 <script setup>
 import MapView from "./mapView/MapView.vue";
-import useEnvSanStore from "@/store/modules/envSan.js";
 import BottomNavigation from "./BottomNavigation/BottomNavigation.vue";
 import VehiclePointerTitleController from "./mapView/VehiclePointerTitleController/VehiclePointerTitleController.vue";
-import mapPointSearch from "./mapView/components/mapPointSearch/index.vue";
-import PVMonitor from "./mapView/components/PVMonitor/index.vue";
-
-
-const layers = ref([]);
-
-const mapViewRef = ref(null);
-// 初始化完图层数据
-const handleLoadMapLayer = (layersData) => {
-  layers.value = layersData;
-};
-// 设置地图中心点
-const setMapCenter = (pointerInfo) => {
-  const { jd, wd, ...rest } = pointerInfo;
-  // 设置经纬度
-  mapViewRef.value.setMapCenter([jd, wd], rest);
-};
 </script>
 
 <style scoped lang="scss">
