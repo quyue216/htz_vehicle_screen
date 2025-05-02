@@ -2,7 +2,10 @@
   <div class="map-wrap">
     <div id="gisMap"></div>
     <!-- 车辆历史轨迹 -->
-    <VehicleHistoryPath v-model:plate="carNumber"/>
+    <VehicleHistoryPath 
+      v-model:plate="carNumber"
+      @getCarPath="getCarPath"
+    />
     <!-- 车辆监控 -->
     <PVMonitor
       :videoUrlList="carVideoUrls"
@@ -32,16 +35,16 @@ import {
   getReduceVolSites,
   getMdzdList,
   getTransferPointInfo,
-  getCarVideoUrl
-} from "@/api/envSan/map.js";
-import {
+  getCarVideoUrl,
   getCarInfo,
   getZzzInfo,
   getToiletInfo,
   getRedeVolInfo,
+  getCarTrack
 } from "@/api/envSan/map.js";
 import getComponentDom from "@/utils/getComponentDom.js";
 import "./sydwPointer.js";
+import modal from "@/plugins/modal.js";
 import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
 import BasicInfoDialog from "./components/BasicInfoDialog/BasicInfoDialog.vue";
 import PVMonitor from "./components/PVMonitor/index.vue";
@@ -69,10 +72,7 @@ const gdMapUtils = new GdMapUtils({
   },
 });
 
-
-
-const carNumber = ref("");
-
+// 初始化点位配置
 const {
   zzVehicle,
   endStation,
@@ -613,6 +613,8 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
     config: config,
     marker,
   };
+  // 设置当前展开车牌号
+  carNumber.value = marker.getExtData().title; // 车辆号牌
 
   gdMapUtils.openInfoWindow(infoWindow);
 });
@@ -657,7 +659,7 @@ watch(
     });
     // 数据使用完毕,销毁掉
     pointerBasicInfo = null;
-
+    carNumber.value = null; // 车辆号牌
     gdMapUtils.openInfoWindow(infoWindow);
   }
 );
@@ -762,6 +764,31 @@ const setMapCenter = (pointerInfo) => {
   }
   // 设置地图中心点
   gdMapUtils.setCenter([jd,wd], 20);
+};
+
+
+//!------------------ 车辆轨迹回放逻辑
+const carNumber = ref("");
+
+const getCarPath = async ({params,openLoading,closeLoading}) => {
+ try {
+   openLoading();
+   const result = await getCarTrack(params);
+   if (result.code === 200) {
+     
+     if(result.data.length === 0) 
+     return  modal.msgWarning("没有轨迹数据"); //没有轨迹数据
+ 
+     console.log('result.data',result.data);
+     
+ 
+   }
+ }catch (error) {
+   console.log("getCarPath error", error);
+   modal.msgWarning(error.message);
+ } finally {
+   closeLoading();
+ }
 };
 </script>
 

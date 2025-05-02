@@ -6,7 +6,6 @@
     <div
       id="gjdialogs"
       v-loading="getDataloading"
-      element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(8, 30, 56, 0.8)"
       v-if="envSanStore.vehiclePathShow"
     >
@@ -27,7 +26,7 @@
           v-model="startDate"
           type="datetime"
           class="datePicker"
-          value-format="yyyy-MM-dd HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
           :editable="false"
           :clearable="false"
           placeholder="选择起点日期时间"
@@ -39,7 +38,7 @@
           class="datePicker"
           :editable="false"
           :clearable="false"
-          value-format="yyyy-MM-dd HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm:ss"
           placeholder="选择止点日期时间"
         ></el-date-picker>
 
@@ -136,8 +135,8 @@ const emit = defineEmits([
 const envSanStore = useEnvSanStore();
 
 // 获取今天的 0 点到现在
-const CurTime = dayjs().format("yyyy-MM-dd HH:mm:ss");
-const startTime = dayjs().startOf("day").format("yyyy-MM-dd HH:mm:ss");
+const CurTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
+const startTime = dayjs().startOf("day").format("YYYY-MM-DD HH:mm:ss");
 // 定义响应式数据
 const startDate = ref(props.startDateTime || startTime);
 const endDate = ref(props.endDateTime || CurTime);
@@ -153,6 +152,7 @@ const clearCarPath = () => {
 // 获取车辆轨迹
 const getCarPath = () => {
   // 判断是不是一天的数据
+  
   const startDateFormatted = dayjs(startDate.value).format("YYYY-MM-DD");
   const endDateFormatted = dayjs(endDate.value).format("YYYY-MM-DD");
   if (startDateFormatted !== endDateFormatted) {
