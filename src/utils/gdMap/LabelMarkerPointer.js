@@ -6,9 +6,11 @@ export default class LabelLayerRender {
 
   dataList = []; // 数据列表
 
-  #layerInstance = null; // 图层实例
+  // 去掉私有属性标识
+  layerInstance = null; // 图层实例
 
-  #isLayerCreated = false; // 图层是否已创建
+  // 去掉私有属性标识
+  isLayerCreated = false; // 图层是否已创建
 
   envSanStore = useEnvSanStore(); // 使用环境状态存储
 
@@ -48,7 +50,7 @@ export default class LabelLayerRender {
     if (!this.shouldSkipLayerCreation) return;  //避免网络时间过长用户切换到切tab
 
     // 创建地图图层
-    this.#layerInstance = gdMapUtils.createLabelLayer(this.config.layerOptions);
+    this.layerInstance = gdMapUtils.createLabelLayer(this.config.layerOptions);
 
     // 创建标记
     let markers = this.dataList
@@ -56,7 +58,7 @@ export default class LabelLayerRender {
         return this.createOverlay(gdMapUtils, this.config, item);
       });
 
-    this.#layerInstance.add(markers); // 添加标记到图层
+    this.layerInstance.add(markers); // 添加标记到图层
     //HACK  labelLayer没有统一绑定事件的方法
     markers.forEach((overlay) => {
       overlay.on('click', (e) => {
@@ -70,15 +72,15 @@ export default class LabelLayerRender {
       })
     })
 
-    this.#isLayerCreated = true; // 设置图层创建状态为true
+    this.isLayerCreated = true; // 设置图层创建状态为true
 
     markers = null; // 释放内存
   }
 
   // 显示图层
   showLayer() {
-    if (this.#layerInstance && this.dataList.length) {
-      this.#layerInstance.show(); // 显示图层
+    if (this.layerInstance && this.dataList.length) {
+      this.layerInstance.show(); // 显示图层
     }
   }
   get shouldSkipLayerCreation() {
@@ -87,8 +89,8 @@ export default class LabelLayerRender {
 
   // 隐藏图层
   hideLayer() {
-    if (this.#layerInstance && this.dataList.length) {
-      this.#layerInstance.hide(); // 隐藏图层
+    if (this.layerInstance && this.dataList.length) {
+      this.layerInstance.hide(); // 隐藏图层
     }
   }
 
@@ -102,7 +104,7 @@ export default class LabelLayerRender {
 
     if (this.shouldSkipLayerCreation) {
 
-      if (this.#isLayerCreated) {
+      if (this.isLayerCreated) {
 
         this.showLayer(); // 显示图层
 

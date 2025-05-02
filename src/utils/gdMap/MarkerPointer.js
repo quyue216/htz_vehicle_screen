@@ -5,7 +5,8 @@ export default class MarkerLayerRender {
 
   dataList = []  // 数据列表
 
-  #updatePointerTimer = null; // 定时器实例
+  // 去掉私密属性标识
+  updatePointerTimer = null; 
 
   layerInstance = null // 图层实例
 
@@ -135,12 +136,14 @@ export default class MarkerLayerRender {
   startDetectingPositionChange(getGdMapUtilsIns) {
     if (!this.layerInstance && !this.detectingPosition) return;
     this.stopDetectingPositionChange(); //先停止在开启,避免多次执行
-    this.#updatePointerTimer = setInterval(() => this.updatePointer(getGdMapUtilsIns), this.config.updateTime);
+    // 修改定时器属性引用
+    this.updatePointerTimer = setInterval(() => this.updatePointer(getGdMapUtilsIns), this.config.updateTime);
   }
 
   // 停止检测车辆经纬度变化
   stopDetectingPositionChange() {
-    clearInterval(this.#updatePointerTimer); // 清除定时器
+    // 修改定时器属性引用
+    clearInterval(this.updatePointerTimer); 
   }
 
   // 更新车辆位置
