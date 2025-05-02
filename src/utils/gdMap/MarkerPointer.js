@@ -140,17 +140,21 @@ export default class MarkerLayerRender {
       const marker = this.layerInstance.findLayerMarker(item.id);
     
       const iconImage = item.extData.onLine ? this.config.onLineIcon : this.config.icon;
+      // 激活图标不需要更新位置和图标
+      const  activesMarkerIds = this.layerInstance.activesMarkerIds; // 获取激活的markerId
       
-      if (marker) { //存在的marker需要更新位置和图标
+      if (!activesMarkerIds.includes(item.id)) {
+        if (marker) { //存在的marker需要更新位置和图标
         
-        marker.setPosition(getGdMapUtilsIns.LngLat(item.jd, item.wd)); 
-
-        const icon = getGdMapUtilsIns.createIcon(this.config.size, iconImage, this.config.size);
-
-        marker.setIcon(icon)
-
-      }else{ //没有的marker需要重新创建
-        this.createOverlay(getGdMapUtilsIns, iconImage, item)
+          marker.setPosition(getGdMapUtilsIns.LngLat(item.jd, item.wd)); 
+  
+          const icon = getGdMapUtilsIns.createIcon(this.config.size, iconImage, this.config.size);
+  
+          marker.setIcon(icon)
+  
+        }else{ //没有的marker需要重新创建
+          this.createOverlay(getGdMapUtilsIns, iconImage, item)
+        } 
       }
     });
 

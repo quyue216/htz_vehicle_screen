@@ -11,7 +11,7 @@
 
     <!-- 监控弹框 -->
     <PVMonitor
-      :videoUrlList="videoUrlList"
+      :videoUrlList="carVideoUrls"
       v-model:visible="envSanStore.monitorDialogVisible"
     ></PVMonitor>
     <!-- 定位查询 -->
@@ -70,7 +70,8 @@ watch(()=>envSanStore.monitorDialogVisible,(newVal,oldVal)=>{
   if(newVal && !oldVal){
     // 打开
     const id = showPointerInfo.value.id;
-    fetchCarVideoUrl(id);
+    // console.log(showPointerInfo.value);
+    fetchCarVideoUrl({cphm: id});
   }
 
 })

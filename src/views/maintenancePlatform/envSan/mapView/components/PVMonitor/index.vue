@@ -4,7 +4,7 @@
       <span> 车辆视频监测</span>
       <i class="icon" @click="clearVideo"></i>
     </div>
-    <div class="content" v-if="videoUrlListLength > 0 && !isClose">
+    <div class="content" v-if="videoUrlListLength > 0 ">
       <div class="videoContent" :class="{ grid: batchState }">
         <template v-if="batchState">
           <div class="video-item" v-for="(url, index) in videoUrlList" :key="index">
@@ -18,13 +18,13 @@
 
       <div class="tools">
         <div class="left" v-show="!batchState">
-          <i class="el-icon-caret-left" @click="leftCheckVideoUrl"></i>
+          <el-icon @click="leftCheckVideoUrl"><ArrowLeft /></el-icon>
         </div>
         <div class="batch" :class="{ active: batchState }">
-          <i class="el-icon-menu" @click="handBatch"></i>
+          <el-icon @click="handBatch"> <Menu /> </el-icon>
         </div>
         <div class="right" v-show="!batchState">
-          <i class="el-icon-caret-right" @click="rightCheckVideoUrl"></i>
+          <el-icon @click="rightCheckVideoUrl"><ArrowRight /></el-icon>
         </div>
       </div>
     </div>
@@ -53,7 +53,6 @@ const dialogVisible = defineModel('visible',{
 // 响应式数据
 const batchState = ref(true); 
 const videoOpenIndex = ref(0); 
-const isClose = ref(false); 
 
 // 计算属性
 const videoUrlListLength = computed(() => props.videoUrlList.length);
@@ -86,7 +85,6 @@ const rightCheckVideoUrl = () => {
 
 // 关闭视频弹窗
 const clearVideo = () => {
-  isClose.value = true;
   // 关闭外部的dialog框
   dialogVisible.value = false;
 };
