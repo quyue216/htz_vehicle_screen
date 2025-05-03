@@ -2,10 +2,7 @@
   <div class="map-wrap">
     <div id="gisMap"></div>
     <!-- 车辆历史轨迹 -->
-    <VehicleHistoryPath 
-      v-model:plate="carNumber"
-      @getCarPath="getCarPath"
-    />
+    <VehicleHistoryPath v-model:plate="carNumber" @getCarPath="getCarPath" />
     <!-- 车辆监控 -->
     <PVMonitor
       :videoUrlList="carVideoUrls"
@@ -28,6 +25,7 @@ import LabelMarkerPointer from "@/utils/gdMap/LabelMarkerPointer.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
 import { pointerConfig as mapViewConfig } from "./mapView.config.js";
 import { mapInfoToKeyValue } from "@/utils/ruoyi.js";
+import { getAngle } from "@/utils/ruoyi.js";
 import {
   getCarList,
   getZzZylList,
@@ -40,10 +38,10 @@ import {
   getZzzInfo,
   getToiletInfo,
   getRedeVolInfo,
-  getCarTrack
+  getCarTrack,
 } from "@/api/envSan/map.js";
 import getComponentDom from "@/utils/getComponentDom.js";
-import "./sydwPointer.js";
+import SydwLayerController from "./sydwPointer.js";
 import modal from "@/plugins/modal.js";
 import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
 import BasicInfoDialog from "./components/BasicInfoDialog/BasicInfoDialog.vue";
@@ -86,7 +84,6 @@ const {
 let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框打开, {}弹框打开
 
 let layerList = ref([]); //存储图层集合
-
 
 // 初始化公厕图层
 const initToiletLayer = () => {
@@ -593,10 +590,12 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   // 先关闭pointer弹框
   envSanStore.closeBasicPointerShow();
 
-  const { windowConfig } = config;  
+  const { windowConfig } = config;
 
   //将.vue转化为DOM
-  const dom = getComponentDom(PointerMenu, {pointerInfo: marker.getExtData()});
+  const dom = getComponentDom(PointerMenu, {
+    pointerInfo: marker.getExtData(),
+  });
   // 创建infoWindow
   const infoWindow = gdMapUtils.createInfoWindow({
     isCustom: true,
@@ -721,9 +720,6 @@ async function fetchMarkerData(type, params, InfoLabels) {
   }
 }
 
-
-
-
 //!------------------ 车辆监控弹窗逻辑
 const carVideoUrls = ref([]);
 
@@ -735,23 +731,25 @@ const fetchCarVideoUrl = async (carId) => {
   if (res.code === 200) {
     // 获取到数据
     carVideoUrls.value = res.data;
-  } 
+  }
 };
 
-watch(()=>envSanStore.monitorDialogVisible,(newVal,oldVal)=>{
-  
-  if(newVal && !oldVal){
-    // 打开
-    const id = pointerBasicInfo.extData.id;
-    console.log(pointerBasicInfo);
-    fetchCarVideoUrl({cphm: id});
+watch(
+  () => envSanStore.monitorDialogVisible,
+  (newVal, oldVal) => {
+    if (newVal && !oldVal) {
+      // 打开
+      const id = pointerBasicInfo.extData.id;
+      console.log(pointerBasicInfo);
+      fetchCarVideoUrl({ cphm: id });
+    }
   }
-})
+);
 
-//!------------搜索点位弹框 
+//!------------搜索点位弹框
 // 设置地图中心点
 const setMapCenter = (pointerInfo) => {
-  const { jd, wd} = pointerInfo;
+  const { jd, wd } = pointerInfo;
 
   if (pointerInfo.className) {
     // 车辆点位才具备此属性
@@ -763,33 +761,176 @@ const setMapCenter = (pointerInfo) => {
     layer.highlightMarker(pointerInfo.id);
   }
   // 设置地图中心点
-  gdMapUtils.setCenter([jd,wd], 20);
+  gdMapUtils.setCenter([jd, wd], 20);
 };
-
 
 //!------------------ 车辆轨迹回放逻辑
 const carNumber = ref("");
+let carTrackInfo = null; // 车辆轨迹数据
+const getCarPath = async ({ params, openLoading, closeLoading }) => {
+  try {
+    openLoading();
+    const result = await getCarTrack(params);
+    if (result.code === 200) {
+      if (result.data.length === 0) return modal.msgWarning("没有轨迹数据"); //没有轨迹数据
 
-const getCarPath = async ({params,openLoading,closeLoading}) => {
- try {
-   openLoading();
-   const result = await getCarTrack(params);
-   if (result.code === 200) {
-     
-     if(result.data.length === 0) 
-     return  modal.msgWarning("没有轨迹数据"); //没有轨迹数据
- 
-     console.log('result.data',result.data);
-     
- 
-   }
- }catch (error) {
-   console.log("getCarPath error", error);
-   modal.msgWarning(error.message);
- } finally {
-   closeLoading();
- }
+      carTrackInfo = result.data;
+      drawCarPathOfHistory(carTrackInfo); // 绘制轨迹
+      //绘制起点终点和maker覆盖物
+      drawMarkerPointer(carTrackInfo); // 绘制车辆图标
+    }
+  } catch (error) {
+    console.log("getCarPath error", error);
+    modal.msgWarning(error.message);
+  } finally {
+    closeLoading();
+  }
 };
+
+let curPolyline = null; // 当前绘制的轨迹
+
+let carMarker = null; // 当前绘制的车辆图标
+// 绘制车辆历史路径
+const drawCarPathOfHistory = (data) => {
+  hiddenAllPointer(); // 隐藏所有覆盖物
+
+  curPolyline = gdMapUtils.drawPolyline({
+    path: data.map((item) => {
+      return [item.lon, item.lat];
+    }),
+    showDir: true,
+    lineJoin: "round",
+    strokeColor: "#d90013",
+    strokeOpacity: 1,
+    strokeWeight: 10,
+  });
+
+  gdMapUtils.setFitView(
+    [curPolyline], // 覆盖物数组
+    true, // 动画过渡到制定位置
+    [60, 60, 60, 60], // 周围边距，上、下、左、右
+    13.27
+  ); // 最大 zoom 级别); // 重新设置地图视野
+};
+
+const drawMarkerPointer = (data) => {
+  const start = data[0]; // 起点
+  const makerType = "trackMarker"; // 车辆轨迹图标类型
+  // 获取当前点位类型
+  const key = pointerBasicInfo.extData.className; // 车辆轨迹图标类型
+  // 获取对应配置
+  const { pathConfig, workConfig } = mapViewConfig[key];
+
+  const icon = gdMapUtils.createIcon(
+    pathConfig.size,
+    pathConfig.startIcon,
+    pathConfig.size
+  );
+
+  const end = data[data.length - 1]; // 终点
+
+  const second = data[10]; // 第二个点
+  const endIcon = gdMapUtils.createIcon(
+    pathConfig.size,
+    pathConfig.endIcon,
+    pathConfig.size
+  );
+
+  const carIcon = gdMapUtils.createIcon(
+    pathConfig.size,
+    pathConfig.carIcon,
+    pathConfig.size
+  );
+
+  const moveIcon = gdMapUtils.createIcon(
+    pathConfig.moveSize,
+    pathConfig.moveIcon,
+    pathConfig.moveSize
+  );
+  // 绘制起点
+  gdMapUtils.createMarker(makerType, {
+    anchor: "bottom-center",
+    icon,
+    zooms: [2, 20],
+    zIndex: 12,
+    extData: {
+      className: makerType,
+    },
+    position: gdMapUtils.LngLat(start.lon, start.lat), //设置经纬度
+  });
+  // 绘制终点
+  gdMapUtils.createMarker(makerType, {
+    anchor: "bottom-center",
+    icon: endIcon,
+    zooms: [2, 20],
+    zIndex: 12,
+    extData: {
+      className: makerType,
+    },
+    position: gdMapUtils.LngLat(end.lon, end.lat), //设置经纬度
+  });
+
+  // 绘制终点
+  gdMapUtils.createMarker(makerType, {
+    anchor: "bottom-center",
+    icon: moveIcon,
+    zooms: [2, 20],
+    zIndex: 12,
+    angle: getAngle(
+      {
+        lon: start.lon,
+        lat: start.lat,
+      },
+      {
+        lon: second.lon,
+        lat: second.lat,
+      }
+    ), // 计算角度
+    extData: {
+      className: makerType,
+    },
+    position: gdMapUtils.LngLat(start.lon, start.lat), //设置经纬度
+  });
+};
+
+//[x] (移入到gdUtils.js会不会更好) 隐藏地图所有覆盖物
+const hiddenAllPointer = () => {
+  const layers = [SydwLayerController, ...layerList.value];
+  layers.forEach((layer) => {
+    layer.hideLayer();
+  });
+  gdMapUtils.clearInfoWindow(); // 清除所有弹框
+};
+
+// 显示地图所有覆盖物
+const showAllPointer = () => {
+  const layers = [SydwLayerController, ...layerList.value];
+  layers.forEach((layer) => {
+    layer.showLayer();
+  });
+};
+//
+watch(
+  () => envSanStore.vehiclePathShow,
+  (newVal, oldVal) => {
+    if (!newVal) {
+      // 显示所有覆盖物
+      showAllPointer();
+
+      // 隐藏轨迹
+      if(curPolyline){
+        curPolyline.destroy(); // 隐藏轨迹
+        gdMapUtils.setFitView(); // 重新设置地图视野
+      }
+
+     const layer = gdMapUtils.getOverlayGroupManager("trackMarker");
+
+      if (layer) {
+        layer.clearOverlays(); // 清除轨迹marker图标
+      }      
+    }
+  }
+);
 </script>
 
 <style scoped lang="scss">

@@ -63,6 +63,12 @@ const useEnvSanStore = defineStore('envSan', () => {
     closeVehiclePathShow(); 
   }
 
+// 切换菜单关闭弹框
+  watch(mapActiveType, (newVal, oldVal) => {
+    closeVehiclePathShow(); // 关闭车辆路径
+  })
+
+
   // 返回状态、actions 和 getters
   return {
     mapActiveType,

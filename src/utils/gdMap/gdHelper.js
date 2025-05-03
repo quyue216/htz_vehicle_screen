@@ -17,7 +17,7 @@ const gdHelperMixin = {
     */
     setFitView(...opts) {
         // 地图适应到最佳视角
-        this.map.setFitView(opts.overlays, opts.immediately, opts.avoid, opts.maxZoom);
+        this.map.setFitView(...opts);
     },
     /**
     * 创建一个图标
@@ -146,6 +146,13 @@ const gdHelperMixin = {
     openInfoWindow(infoWindow, ...rest) {
         infoWindow.open(this.map, ...rest);
     },
+    // 绘制线路
+    drawPolyline(paths) {
+        return new this.AMap.Polyline({
+            map: this.map,
+            ...paths,
+        });
+    }
 }
 
 export default gdHelperMixin;

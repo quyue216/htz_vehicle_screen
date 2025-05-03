@@ -133,6 +133,12 @@ class GdMapUtils {
 
     })
 
+    // 绑定缩放时间获取当前层级
+    this.map.on('zoomchange', () => {
+      const zoom = this.map.getZoom(); // 获取当前缩放级别
+        
+       console.log('当前缩放级别:', zoom);
+    })
   }
 
   //给所有的marker绑定事件

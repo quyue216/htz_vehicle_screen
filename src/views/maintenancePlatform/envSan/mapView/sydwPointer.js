@@ -205,3 +205,8 @@ watch(() => envSanStore.mapActiveType, (newVal, oldVal) => {
 onUnmounted(() => {
   stopDetectingPositionChange(); // 清除定时器
 });
+
+export default {
+  hideLayer,
+  showLayer
+}

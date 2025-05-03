@@ -279,3 +279,29 @@ export function mapInfoToKeyValue(infoObj, labels) {
     value: infoObj[key]
   }));
 }
+
+/* 
+计算车辆行驶方向
+*/
+export function getAngle(startPoint, endPoint) {
+  if (!(startPoint && endPoint)) {
+    return 0;
+  }
+  let dRotateAngle = Math.atan2(
+    Math.abs(startPoint.lng - endPoint.lng),
+    Math.abs(startPoint.lat - endPoint.lat)
+  );
+  if (endPoint.lng >= startPoint.lng) {
+    if (endPoint.lat >= startPoint.lat) {} else {
+      dRotateAngle = Math.PI - dRotateAngle;
+    }
+  } else {
+    if (endPoint.lat >= startPoint.lat) {
+      dRotateAngle = 2 * Math.PI - dRotateAngle;
+    } else {
+      dRotateAngle = Math.PI + dRotateAngle;
+    }
+  }
+  dRotateAngle = (dRotateAngle * 180) / Math.PI;
+  return dRotateAngle;
+}
