@@ -2,7 +2,17 @@
   <div class="map-wrap">
     <div id="gisMap"></div>
     <!-- 车辆历史轨迹 -->
-    <VehicleHistoryPath v-model:plate="carNumber" @getCarPath="getCarPath" />
+    <VehicleHistoryPath
+      v-model:plate="carNumber"
+      @getCarPath="getCarPath"
+      @clearCarPath="handleClearCarPath"
+      @speedChange="handleSpeedChange"
+      @carPathStart="handleCarPathStart"
+      @carPathPause="handleCarPathPause"
+      @carPathResume="handleCarPathResume"
+      @carPathStop="handleCarPathStop"
+      @carPathClose="handleCarPathClose"
+    />
     <!-- 车辆监控 -->
     <PVMonitor
       :videoUrlList="carVideoUrls"
@@ -60,6 +70,7 @@ const gdMapUtils = new GdMapUtils({
     "AMap.Heatmap",
     "AMap.ControlBar",
     "AMap.MapType",
+    "AMap.MoveAnimation",
   ],
   Loca: {
     version: "2.0.0",
@@ -767,14 +778,23 @@ const setMapCenter = (pointerInfo) => {
 //!------------------ 车辆轨迹回放逻辑
 const carNumber = ref("");
 let carTrackInfo = null; // 车辆轨迹数据
+let curPolyline = null; // 当前绘制的轨迹
+let carMarker = null,startPointer,endPointer; // 当前绘制的车辆图标
+let isDrawPath = false; // 是否绘制轨迹
 const getCarPath = async ({ params, openLoading, closeLoading }) => {
+  if (curPolyline || carMarker) {
+    // 如果已经有轨迹数据,则先清除
+    return modal.msgWarning("轨迹数据已加载"); //没有轨迹数据
+  }
   try {
     openLoading();
     const result = await getCarTrack(params);
     if (result.code === 200) {
+    
       if (result.data.length === 0) return modal.msgWarning("没有轨迹数据"); //没有轨迹数据
 
-      carTrackInfo = result.data;
+      carTrackInfo = result.data.filter((item) => item.lon && item.lat);
+
       drawCarPathOfHistory(carTrackInfo); // 绘制轨迹
       //绘制起点终点和maker覆盖物
       drawMarkerPointer(carTrackInfo); // 绘制车辆图标
@@ -787,16 +807,14 @@ const getCarPath = async ({ params, openLoading, closeLoading }) => {
   }
 };
 
-let curPolyline = null; // 当前绘制的轨迹
-
-let carMarker = null; // 当前绘制的车辆图标
 // 绘制车辆历史路径
 const drawCarPathOfHistory = (data) => {
+
   hiddenAllPointer(); // 隐藏所有覆盖物
 
   curPolyline = gdMapUtils.drawPolyline({
     path: data.map((item) => {
-      return [item.lon, item.lat];
+      return [+item.lon, +item.lat];
     }),
     showDir: true,
     lineJoin: "round",
@@ -812,14 +830,14 @@ const drawCarPathOfHistory = (data) => {
     13.27
   ); // 最大 zoom 级别); // 重新设置地图视野
 };
-
+// 绘制车辆图标
 const drawMarkerPointer = (data) => {
   const start = data[0]; // 起点
   const makerType = "trackMarker"; // 车辆轨迹图标类型
   // 获取当前点位类型
   const key = pointerBasicInfo.extData.className; // 车辆轨迹图标类型
   // 获取对应配置
-  const { pathConfig, workConfig } = mapViewConfig[key];
+  const { pathConfig } = mapViewConfig[key];
 
   const icon = gdMapUtils.createIcon(
     pathConfig.size,
@@ -835,20 +853,14 @@ const drawMarkerPointer = (data) => {
     pathConfig.endIcon,
     pathConfig.size
   );
-
-  const carIcon = gdMapUtils.createIcon(
-    pathConfig.size,
-    pathConfig.carIcon,
-    pathConfig.size
-  );
-
+  // 清运车辆图标
   const moveIcon = gdMapUtils.createIcon(
     pathConfig.moveSize,
     pathConfig.moveIcon,
     pathConfig.moveSize
   );
   // 绘制起点
-  gdMapUtils.createMarker(makerType, {
+  startPointer = gdMapUtils.createMarker(makerType, {
     anchor: "bottom-center",
     icon,
     zooms: [2, 20],
@@ -859,7 +871,7 @@ const drawMarkerPointer = (data) => {
     position: gdMapUtils.LngLat(start.lon, start.lat), //设置经纬度
   });
   // 绘制终点
-  gdMapUtils.createMarker(makerType, {
+  endPointer =  gdMapUtils.createMarker(makerType, {
     anchor: "bottom-center",
     icon: endIcon,
     zooms: [2, 20],
@@ -871,7 +883,7 @@ const drawMarkerPointer = (data) => {
   });
 
   // 绘制终点
-  gdMapUtils.createMarker(makerType, {
+  carMarker = gdMapUtils.createMarker(makerType, {
     anchor: "bottom-center",
     icon: moveIcon,
     zooms: [2, 20],
@@ -893,6 +905,81 @@ const drawMarkerPointer = (data) => {
   });
 };
 
+// 关闭车辆轨迹弹窗
+const handleClearCarPath = () => {
+  // 这里添加清除车辆轨迹的逻辑
+  showAllPointer(); // 显示所有覆盖物
+   
+  handleCarPathClose(); // 关闭车辆轨迹弹窗
+
+  gdMapUtils.setFitView(); // 重新设置地图的视野
+};
+
+// 速度变化
+const handleSpeedChange = (speed) => {
+  if (!curPolyline || !carMarker) return modal.msgWarning("请先加载轨迹!"); // 没有轨迹数据
+
+  // 这里添加速度变化的逻辑
+  console.log("速度变化:", speed);
+};
+
+// 开始车辆轨迹回放
+const handleCarPathStart = () => {
+  // 这里添加开始车辆轨迹回放的逻辑
+  if (!curPolyline || !carMarker) return modal.msgWarning("请先加载轨迹!"); // 没有轨迹数据
+  const path = carTrackInfo.map((item) => {
+    return [+item.lon, +item.lat];
+  });
+  carMarker.moveAlong(path, {
+    // 每一段的时长
+    duration: (...rest)=>{
+      console.log('rest',rest);
+      
+      return 500;
+    }, //可根据实际采集时间间隔设置
+    // JSAPI2.0 是否延道路自动设置角度在 moveAlong 里设置
+    autoRotation: true,
+  });
+};
+// 暂停车辆轨迹回放
+const handleCarPathPause = () => {
+  // 这里添加暂停车辆轨迹回放的逻辑
+  if (!curPolyline || !carMarker) return modal.msgWarning("请先加载轨迹!"); // 没有轨迹数据
+
+  carMarker.pauseMove(); // 暂停动画
+};
+
+// 恢复车辆轨迹回放
+const handleCarPathResume = () => {
+  // 这里添加恢复车辆轨迹回放的逻辑
+  if (!curPolyline || !carMarker) return modal.msgWarning("请先加载轨迹!"); // 没有轨迹数据
+
+  carMarker.resumeMove(); // 恢复动画
+};
+
+// 停止 回到原点
+const handleCarPathStop = () => {
+  // 这里添加停止车辆轨迹回放的逻辑
+  if (!curPolyline || !carMarker) return modal.msgWarning("请先加载轨迹!"); // 没有轨迹数据
+
+  carMarker.stopMove(); // 停止动画
+  carMarker.setPosition(curPolyline.getPath()[0]); // 设置车辆位置
+};
+
+// 清楚车辆轨迹弹窗
+const handleCarPathClose = () => {
+    // 这里添加关闭车辆轨迹弹窗的逻辑
+    curPolyline&&gdMapUtils.removeSingleOverlay(curPolyline); // 清除轨迹
+    
+    curPolyline = null; // 清除轨迹
+    // 清楚动画
+    carMarker.stopMove(); // 停止动画
+
+    gdMapUtils.removeMarker('trackMarker',[carMarker,endPointer,startPointer])
+    // 清除marker
+    carMarker=null;
+  
+};
 //[x] (移入到gdUtils.js会不会更好) 隐藏地图所有覆盖物
 const hiddenAllPointer = () => {
   const layers = [SydwLayerController, ...layerList.value];
@@ -909,28 +996,14 @@ const showAllPointer = () => {
     layer.showLayer();
   });
 };
-//
-watch(
-  () => envSanStore.vehiclePathShow,
-  (newVal, oldVal) => {
-    if (!newVal) {
-      // 显示所有覆盖物
-      showAllPointer();
 
-      // 隐藏轨迹
-      if(curPolyline){
-        curPolyline.destroy(); // 隐藏轨迹
-        gdMapUtils.setFitView(); // 重新设置地图视野
-      }
-
-     const layer = gdMapUtils.getOverlayGroupManager("trackMarker");
-
-      if (layer) {
-        layer.clearOverlays(); // 清除轨迹marker图标
-      }      
-    }
+// 状态发生变化隐藏掉轨迹
+watch(()=>envSanStore.mapActiveType,()=>{
+  if(curPolyline&&carMarker){
+    handleCarPathClose();    // 关闭车辆轨迹弹窗
+    envSanStore.closeVehiclePathShow(); // 关闭车辆路径弹窗
   }
-);
+})
 </script>
 
 <style scoped lang="scss">

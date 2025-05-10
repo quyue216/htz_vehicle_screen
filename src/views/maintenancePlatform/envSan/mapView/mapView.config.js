@@ -112,7 +112,7 @@ export const pointerConfig = {
       cllx: "车辆类型"
     },
     name: 'zz', // 中转车
-    updateTime: 10000, // 更新位置定时器时间
+    updateTime: 10000*6, // 更新位置定时器时间
   },
   qyCollectionPoint: {
     icon: sydwIcon,
@@ -124,7 +124,7 @@ export const pointerConfig = {
     windowConfig: {
       offset: [0, -90],
     },
-    updateTime: 10000, // 更新定时器时间
+    updateTime: 10000*6, // 更新定时器时间
   },
   // 清运车
   qyVehicle: {
@@ -155,7 +155,7 @@ export const pointerConfig = {
       cphm: "车牌号码",
       cllx: "车辆类型"
     },
-    updateTime: 10000, // 更新位置定时器时间
+    updateTime: 10000*6, // 更新位置定时器时间
   },
   compony: {
     //公司marker配置

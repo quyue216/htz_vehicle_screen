@@ -154,6 +154,8 @@ async function updatePointer() {
 
   // 获取数据
   const result = await getSydwList();
+  
+  if(!shouldSkipLayerCreation(envSanStore.mapActiveType)) return;
 
   if (result.code === 200) {
     dataList = result.data.filter((item) => item.jd && item.wd).map((item) => ({

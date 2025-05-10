@@ -1,5 +1,4 @@
 import AMapLoader from '@amap/amap-jsapi-loader';
-import { mergeConfig } from '../ruoyi.js';
 import gdHelperMixin from "./gdHelper.js";  //抽取的高德mixin工具函数
 import OverlayGroupManager from "./OverlayGroupManager.js"
 import eventMixin from "../eventMixin.js";
@@ -200,7 +199,7 @@ class GdMapUtils {
   //移除某一个marker或者多个marker
   removeMarker(overlayType, overlay) {
 
-    if (this.overlayGroupManagerMap.has(overlayType)) {
+    if (!this.overlayGroupManagerMap.has(overlayType)) {
       return this.error('图层不存在，请检查输入!');
     }
 

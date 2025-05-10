@@ -94,7 +94,7 @@ const gdHelperMixin = {
     },
 
     // 海量点数据
-    createLabelLayer({ zoom = [1, 20], zIndex = 1000, collision = true, layerClassName,...rest}) {
+    createLabelLayer({ zoom = [1, 20], zIndex = 1000, collision = true, layerClassName, ...rest }) {
         const labelLayer = new this.AMap.LabelsLayer({
             zIndex,
             collision,
@@ -127,11 +127,11 @@ const gdHelperMixin = {
     /* 
     创建点位信息窗体
     */
-    createInfoWindow({ content,isCustom=true,closeWhenClickMap=true,...rest}) {
+    createInfoWindow({ content, isCustom = true, closeWhenClickMap = true, ...rest }) {
         return new this.AMap.InfoWindow({
             content: content,
             isCustom,
-            closeWhenClickMap:closeWhenClickMap,
+            closeWhenClickMap: closeWhenClickMap,
             ...rest
         });
     },
@@ -152,6 +152,12 @@ const gdHelperMixin = {
             map: this.map,
             ...paths,
         });
+    },
+    clearOverlays() {
+        this.map.clearMap(); // 清除地图上的所有覆盖物
+    },
+    removeSingleOverlay(overlay) {
+        this.map.remove(overlay); // 清除地图上某个覆盖物
     }
 }
 
