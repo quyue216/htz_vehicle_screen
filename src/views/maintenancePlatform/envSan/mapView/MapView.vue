@@ -780,7 +780,9 @@ const carNumber = ref("");
 let carTrackInfo = null; // 车辆轨迹数据
 let curPolyline = null; // 当前绘制的轨迹
 let carMarker = null,startPointer,endPointer; // 当前绘制的车辆图标
-let isDrawPath = false; // 是否绘制轨迹
+let duration = 500;  // 车辆轨迹播放速度
+let path = [];
+let passedPos = [];
 const getCarPath = async ({ params, openLoading, closeLoading }) => {
   if (curPolyline || carMarker) {
     // 如果已经有轨迹数据,则先清除
@@ -919,28 +921,48 @@ const handleClearCarPath = () => {
 const handleSpeedChange = (speed) => {
   if (!curPolyline || !carMarker) return modal.msgWarning("请先加载轨迹!"); // 没有轨迹数据
 
-  // 这里添加速度变化的逻辑
-  console.log("速度变化:", speed);
+  carMarker.stopMove(); // 首先停止动画
+  // 计算新的速度
+  const newDuration = duration - (speed * 100);
+
+  const index = path.findIndex((item)=>{
+    return item[0] === passedPos[0] && item[1] === passedPos[1];
+  })
+  //调整速度 
+  carMoveAlone(newDuration,path.slice(index));
 };
 
 // 开始车辆轨迹回放
-const handleCarPathStart = () => {
+const handleCarPathStart = (speed) => {
   // 这里添加开始车辆轨迹回放的逻辑
   if (!curPolyline || !carMarker) return modal.msgWarning("请先加载轨迹!"); // 没有轨迹数据
-  const path = carTrackInfo.map((item) => {
+   path = carTrackInfo.map((item) => {
     return [+item.lon, +item.lat];
   });
+  
+  carMoveAlone(duration-speed*100,path);
+};
+
+// 让小车动起来
+const  carMoveAlone =(duration,path) =>{
+  
   carMarker.moveAlong(path, {
     // 每一段的时长
-    duration: (...rest)=>{
-      console.log('rest',rest);
-      
-      return 500;
-    }, //可根据实际采集时间间隔设置
+    duration, //可根据实际采集时间间隔设置
     // JSAPI2.0 是否延道路自动设置角度在 moveAlong 里设置
     autoRotation: true,
   });
-};
+
+   //移动速度
+   carMarker.on('moving', function (e) {
+     // 当前已经行驶过的index
+     passedPos = e.passedPos; // 已经行驶过的路径           
+     // 视角跟随移动
+     gdMapUtils.setCenter(e.target.getPosition());
+  });
+  // 计算未行驶路线
+}
+
 // 暂停车辆轨迹回放
 const handleCarPathPause = () => {
   // 这里添加暂停车辆轨迹回放的逻辑
