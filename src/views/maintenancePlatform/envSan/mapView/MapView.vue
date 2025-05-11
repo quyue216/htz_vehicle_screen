@@ -45,7 +45,6 @@ import {
   getTransferPointInfo,
   getCarVideoUrl,
   getCarInfo,
-  getZzzInfo,
   getToiletInfo,
   getRedeVolInfo,
   getCarTrack,
@@ -56,7 +55,7 @@ import modal from "@/plugins/modal.js";
 import PointerMenu from "./components/PointerMenu/PointerMenu.vue";
 import BasicInfoDialog from "./components/BasicInfoDialog/BasicInfoDialog.vue";
 import PVMonitor from "./components/PVMonitor/index.vue";
-import MapPointSearch from "./components/MapPointSearch/index.vue";
+import MapPointSearch from "./components/mapPointSearch/index.vue";
 // 初始化地图显示
 const envSanStore = useEnvSanStore();
 // 初始化高德地图工具
@@ -95,7 +94,7 @@ const {
 let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框打开, {}弹框打开
 
 let layerList = ref([]); //存储图层集合
-
+//!-------- 初始化地图与对应图层 -----------
 // 初始化公厕图层
 const initToiletLayer = () => {
   const toiletLayer = new LabelMarkerPointer({
@@ -548,6 +547,15 @@ const layerConfigs = [
   { name: "endZzPointerLayer", initFn: initEndZzPointerLayer }, //末端站点
   { name: "initCompanyLayer", initFn: initCompanyLayer }, //末端站点
 ];
+// 非公司图层的className数组
+const notVehiclePointer = computed(() => {
+  // 暂存图层list
+  const tempLayer = layerList.value.filter(
+    (item) => !item?.config?.className?.endsWith("Vehicle")
+  );
+  // 返回className的数组
+  return tempLayer.map((l) => l.config.className);
+});
 
 // 创建地图
 onMounted(async () => {
@@ -586,26 +594,15 @@ onMounted(async () => {
 
 onUnmounted(() => {
   // 停止所有车辆图层
-  const vehicleLayers = [zzVehicle.className, qyVehicle.className];
   layerList.value.forEach((item) => {
-    if (vehicleLayers.includes(item.config.name)) {
+    if (!notVehiclePointer.value.includes(item.config.name)) {
       item.stopDetectingPositionChange();
-      item.destroy(); //移除事件
+      item.destroy(); //移除事件这里比较喜欢
     }
   });
 });
 
-const notVehiclePointer = computed(() => {
-  // 暂存图层list
-  const tempLayer = layerList.value.filter(
-    (item) => !item?.config?.className?.endsWith("Vehicle")
-  );
-  // 返回className的数组
-  return tempLayer.map((l) => l.config.className);
-});
-
-
-// 绑定图层图标点击事件,点击创建信息弹框
+//!-----------绑定图层图标点击事件,点击创建信息弹框--------------
 gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   if (config.className === endStation.className) return; //!末端站点不显示弹框
   // 先关闭pointer弹框
@@ -771,7 +768,7 @@ watch(
     if (newVal && !oldVal) {
       // 打开
       const id = pointerBasicInfo.extData.id;
-      console.log(pointerBasicInfo);
+
       fetchCarVideoUrl({ cphm: id });
     }
   }
@@ -784,7 +781,6 @@ const setMapCenter = (pointerInfo) => {
 
   if (pointerInfo.className) {
     // 车辆点位才具备此属性
-    // console.log('pointerInfo',pointerInfo);
     const layer = layerList.value.find(
       (item) => item.config.className === pointerInfo.className
     );
@@ -799,9 +795,9 @@ const setMapCenter = (pointerInfo) => {
 const carNumber = ref("");
 let carTrackInfo = null; // 车辆轨迹数据
 let curPolyline = null; // 当前绘制的轨迹
-let carMarker = null,
-  startPointer,
-  endPointer; // 当前绘制的车辆图标
+let carMarker = null;
+let startPointer = null;
+let endPointer; // 当前绘制的车辆图标
 let duration = 500; // 车辆轨迹播放速度
 let path = [];
 let passedPos = [];
@@ -810,11 +806,15 @@ const getCarPath = async ({ params, openLoading, closeLoading }) => {
     // 如果已经有轨迹数据,则先清除
     return modal.msgWarning("轨迹数据已加载"); //没有轨迹数据
   }
+
   try {
     openLoading();
+  
     const result = await getCarTrack(params);
+  
     if (result.code === 200) {
-      if (result.data.length === 0) return modal.msgWarning("没有轨迹数据"); //没有轨迹数据
+
+    if (result.data.length === 0) return modal.msgWarning("没有轨迹数据"); //没有轨迹数据
 
       carTrackInfo = result.data.filter((item) => item.lon && item.lat);
 
@@ -832,6 +832,7 @@ const getCarPath = async ({ params, openLoading, closeLoading }) => {
 
 // 绘制车辆历史路径
 const drawCarPathOfHistory = (data) => {
+  
   hiddenAllPointer(); // 隐藏所有覆盖物
 
   curPolyline = gdMapUtils.drawPolyline({
