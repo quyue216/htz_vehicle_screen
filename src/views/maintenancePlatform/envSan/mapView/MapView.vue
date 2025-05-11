@@ -995,7 +995,7 @@ const handleCarPathClose = () => {
     
     curPolyline = null; // 清除轨迹
     // 清楚动画
-    carMarker.stopMove(); // 停止动画
+    carMarker&&carMarker.stopMove(); // 停止动画
 
     gdMapUtils.removeMarker('trackMarker',[carMarker,endPointer,startPointer])
     // 清除marker

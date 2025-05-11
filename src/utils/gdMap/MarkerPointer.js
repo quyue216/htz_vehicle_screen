@@ -101,7 +101,7 @@ export default class MarkerLayerRender {
 
   // 显示图层
   showLayer() {
-    if (this.layerInstance && this.dataList.length) {
+    if (this.layerInstance && this.dataList.length&&this.shouldSkipLayerCreation()) {
       this.layerInstance.showOverlay(); // 显示图层
     }
   }

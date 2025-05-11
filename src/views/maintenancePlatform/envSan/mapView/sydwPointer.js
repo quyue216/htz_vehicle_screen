@@ -123,7 +123,7 @@ async function createLayer(gdMapUtils, config) {
 
 // 显示图层
 function showLayer() {
-  if (layerInstance && dataList.length) {
+  if (layerInstance && dataList.length&&shouldSkipLayerCreation()) {
     layerInstance.setData(dataList);
   }
 }

@@ -79,7 +79,7 @@ export default class LabelLayerRender {
 
   // 显示图层
   showLayer() {
-    if (this.layerInstance && this.dataList.length) {
+    if (this.layerInstance && this.dataList.length && this.shouldSkipLayerCreation) {
       this.layerInstance.show(); // 显示图层
     }
   }
