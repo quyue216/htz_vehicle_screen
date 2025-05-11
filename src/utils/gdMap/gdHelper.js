@@ -5,7 +5,7 @@ const gdHelperMixin = {
     * @param zoom 地图层级
     */
     setCenter(lnglat, zoom) {
-        if (zoom === undefined) {
+        if (zoom !== undefined) {
             this.map.setZoomAndCenter(zoom, lnglat); //同时设置地图层级与中心点
         } else {
             this.map.setCenter(lnglat, true)
