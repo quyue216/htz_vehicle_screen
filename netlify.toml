@@ -1,6 +1,6 @@
 [[redirects]]
   from = "/prod-api/*"
-  to = "https://www.shpfyh.com:8088/:splat"
+  to = "https://www.shpfyh.com/prod-api/:splat"
   status = 200
 [[redirects]]
   from = "/*"

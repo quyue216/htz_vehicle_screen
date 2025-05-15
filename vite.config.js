@@ -2,7 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import createVitePlugins from './vite/plugins'
 
-let targetUrl = `https://www.shpfyh.com:8088/`;
+let targetUrl = `https://www.shpfyh.com/`;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
@@ -42,7 +42,7 @@ export default defineConfig(({ mode, command }) => {
           target: targetUrl,
           // target: 'https://api.wzs.pub/mock/13',
           changeOrigin: true,
-          rewrite: (p) => p.replace(new RegExp(`^${VITE_APP_BASE_API}`), '')
+          rewrite: (p) => p
         }
       }
     },
