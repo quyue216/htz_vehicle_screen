@@ -595,9 +595,9 @@ onMounted(async () => {
 onUnmounted(() => {
   // 停止所有车辆图层
   layerList.value.forEach((item) => {
-    if (!notVehiclePointer.value.includes(item.config.name)) {
-      item.stopDetectingPositionChange();
-      item.destroy(); //移除事件这里比较喜欢
+    if (!notVehiclePointer.value.includes(item.config.name)) {      
+      item.stopDetectingPositionChange?.();
+      item.destroy?.(); //移除事件这里比较喜欢
     }
   });
 });

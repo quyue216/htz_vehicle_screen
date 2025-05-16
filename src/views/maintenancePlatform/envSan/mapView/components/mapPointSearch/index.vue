@@ -187,7 +187,8 @@ let updateDataTimer = null;
 // 地图切换更新 激活label选项, select下拉框数据
 watch(
   () => envSanStore.mapActiveType,
-  () => {
+  (newVal) => {
+    if(newVal=== "home") return; // 切换到home页面不更新数据
     clearInterval(updateDataTimer);
 
     searchInputValue.value = ""; // 清空搜索框的值
