@@ -4,16 +4,15 @@
       <MaintHeader></MaintHeader>
     </header>
     <main class="nav-view">
-      <router-view class="full-parent"></router-view>
+      <keep-alive>
+        <router-view class="full-parent"></router-view>
+      </keep-alive>
     </main>
   </div>
 </template>
 
 <script setup>
 import MaintHeader from "./maintenanceHeader/index.vue";
-onMounted(() => {
-  console.log("挂载了");
-});
 </script>
 
 <style scoped lang="scss">

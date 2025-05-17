@@ -97,7 +97,7 @@ const shouldShowMapSearch = computed(
   () => envSanStore.mapActiveType !== "home"
 );
 
-const currentlyActiveTabLabel = ref("车辆"); // 当前选中的标签
+const currentlyActiveTabLabel = ref(null); // 当前选中的标签
 // 计算tab栏目
 const tabOptionList = computed(() => {
   // 初始化 tabs 数组，所有项默认未禁用
@@ -210,6 +210,9 @@ watch(
         dropdownOptionList.value = pointerDataList;
       }
     }, 1000);
+  },
+   {
+    immediate: true // 立即执行回调函数
   }
 );
 </script>
