@@ -31,7 +31,7 @@
 import VehicleHistoryPath from "./components/VehicleHistoryPath/index.vue";
 import GdMapUtils from "@/utils/gdMap/gdMapUtils.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
-import { pointerConfig as mapViewConfig } from "./mapView.config.js";
+import { pointerConfig as mapViewConfig ,notVehiclePointer} from "./mapView.config.js";
 import { mapInfoToKeyValue } from "@/utils/ruoyi.js";
 import { getAngle } from "@/utils/ruoyi.js";
 import {
@@ -89,17 +89,6 @@ let pointerBasicInfo = null; //保存点位基本信息, null说明没有弹框�
 
 let layerList = ref([]); //存储图层集合
 //!-------- 初始化地图与对应图层 -----------
-
-// 非公司图层的className数组
-const notVehiclePointer = computed(() => {
-  // 暂存图层list
-  const tempLayer = layerList.value.filter(
-    (item) => !item?.config?.className?.endsWith("Vehicle")
-  );
-  // 返回className的数组
-  return tempLayer.map((l) => l.config.className);
-});
-
 // 创建地图
 onMounted(async () => {
   // 初始化地图
@@ -125,6 +114,7 @@ onMounted(async () => {
   watch(
     () => envSanStore.mapActiveType,
     (...p) => {
+      gdMapUtils.setFitView();  //调整到合适的视角
       gdMapUtils.clearInfoWindow(); // 切换地图类型时清除所有infoWindow
       layerList.value.forEach((layer) => layer.handleMapTypeChange(...p));
       // 改为代理后导致#属性访问失效
@@ -138,7 +128,7 @@ onMounted(async () => {
 onUnmounted(() => {
   // 停止所有车辆图层
   layerList.value.forEach((item) => {
-    if (!notVehiclePointer.value.includes(item.config.name)) {      
+    if (!notVehiclePointer.includes(item.config.name)) {      
       item.stopDetectingPositionChange?.();
       item.destroy?.(); //移除事件这里比较喜欢
     }
@@ -152,7 +142,7 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   envSanStore.closeBasicPointerShow();
 
   // 非车辆点位,不显示menu弹框
-  if (!notVehiclePointer.value.includes(config.className)) {
+  if (!notVehiclePointer.includes(config.className)) {
 
     const { windowConfig } = config;
 
