@@ -233,3 +233,17 @@ aside {
   color: #000;
   font-size: 17px;
 }
+
+/* 隐藏高德地图的 logo */
+.amap-logo {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 隐藏高德地图的版权信息 */
+.amap-copyright {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
