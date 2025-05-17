@@ -209,3 +209,6 @@ export const pointerConfig = {
     ]
   },
 };
+
+export const notVehiclePointer = Object.values(pointerConfig).filter((item) => item.className.endsWith('Vehicle')).map(item=>item.className);
+
