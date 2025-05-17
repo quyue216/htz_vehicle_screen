@@ -31,7 +31,7 @@
 import VehicleHistoryPath from "./components/VehicleHistoryPath/index.vue";
 import GdMapUtils from "@/utils/gdMap/gdMapUtils.js";
 import useEnvSanStore from "@/store/modules/envSan.js";
-import { pointerConfig as mapViewConfig ,notVehiclePointer} from "./mapView.config.js";
+import { pointerConfig as mapViewConfig ,vehiclePointer} from "./mapView.config.js";
 import { mapInfoToKeyValue } from "@/utils/ruoyi.js";
 import { getAngle } from "@/utils/ruoyi.js";
 import {
@@ -128,7 +128,7 @@ onMounted(async () => {
 onUnmounted(() => {
   // 停止所有车辆图层
   layerList.value.forEach((item) => {
-    if (!notVehiclePointer.includes(item.config.name)) {      
+    if (!vehiclePointer.includes(item.config.name)) {      
       item.stopDetectingPositionChange?.();
       item.destroy?.(); //移除事件这里比较喜欢
     }
@@ -142,7 +142,7 @@ gdMapUtils.on("pointerClick", (marker, e, map, config) => {
   envSanStore.closeBasicPointerShow();
 
   // 非车辆点位,不显示menu弹框
-  if (!notVehiclePointer.includes(config.className)) {
+  if (vehiclePointer.includes(config.className)) {
 
     const { windowConfig } = config;
 
